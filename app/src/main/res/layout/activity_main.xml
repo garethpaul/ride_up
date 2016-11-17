@@ -1,0 +1,129 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    xmlns:mapbox="http://schemas.android.com/apk/res-auto"
+    tools:context="com.foursquare.rideup.MainActivity">
+
+    <com.mapbox.mapboxsdk.maps.MapView
+        android:id="@+id/mapView"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_alignParentTop="true"
+        android:layout_alignParentStart="true">
+
+        <RelativeLayout
+            android:layout_width="match_parent"
+            android:layout_height="52dp"
+            android:layout_margin="9dp"
+            android:background="@android:color/white">
+
+            <TextView
+                android:text="PICKUP LOCATION"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:id="@+id/textView2"
+                android:layout_alignParentEnd="true"
+                android:layout_alignParentStart="true"
+                android:textAppearance="@style/TextAppearance.AppCompat"
+                android:textAlignment="center"
+                android:textSize="10sp"
+                android:textColor="@android:color/holo_green_dark"
+                android:textStyle="normal|bold"
+                android:layout_marginTop="5dp" />
+
+            <TextView
+                android:text="Current Location"
+                android:layout_width="match_parent"
+                android:layout_height="53dp"
+                android:id="@+id/pickUpTextView"
+                android:textAppearance="@style/TextAppearance.AppCompat"
+                android:textAlignment="center"
+                android:layout_below="@+id/textView2"
+                android:layout_marginTop="2dp"
+                android:textSize="18sp" />
+
+            <ImageView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                mapbox:srcCompat="@android:drawable/ic_search_category_default"
+                android:layout_alignParentStart="true"
+                android:id="@+id/imageView"
+                android:layout_margin="10dp" />
+        </RelativeLayout>
+
+    </com.mapbox.mapboxsdk.maps.MapView>
+
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:background="@android:color/white"
+        android:layout_alignParentBottom="true"
+        android:layout_alignParentStart="true"
+        android:layout_height="120dp">
+
+        <LinearLayout
+            android:orientation="horizontal"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_centerVertical="true"
+            android:layout_centerHorizontal="true">
+
+            <Button
+                android:text="Ride X"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:id="@+id/ridexBtn"
+                android:layout_weight="1"
+                android:backgroundTint="#1ABEF5"
+                android:textColor="@android:color/background_light"
+                android:elevation="0dp" />
+
+            <Button
+                android:text="RIDE LUX"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:id="@+id/rideluxBtn"
+                android:layout_weight="1"
+                android:clickable="false" />
+
+            <Button
+                android:text="RIDE BIG"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:id="@+id/ridebigBtn"
+                android:layout_weight="1" />
+        </LinearLayout>
+
+        <RelativeLayout
+            android:layout_width="match_parent"
+            android:layout_height="65dp"
+            android:layout_alignParentBottom="true">
+
+            <Button
+                android:text="Confirm Pickup"
+                android:layout_weight="-1"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_alignParentTop="true"
+                android:id="@+id/confirmBtn"
+                android:layout_alignParentEnd="true"
+                android:layout_alignParentStart="true"
+                android:layout_alignParentLeft="true"
+                android:layout_alignParentRight="true"
+                android:fillViewport="true"
+                android:padding="0dp"
+
+                android:background="#45E57B"
+                android:textColorLink="@android:color/white"
+                android:textColor="@android:color/white"
+                android:textSize="18sp"
+                android:textStyle="normal|bold"
+                android:layout_marginLeft="0dp"
+                android:layout_marginRight="0dp"
+                android:layout_marginTop="0dp"
+                android:layout_alignParentBottom="true" />
+        </RelativeLayout>
+    </RelativeLayout>
+
+</RelativeLayout>

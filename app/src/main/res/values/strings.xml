@@ -1,0 +1,4 @@
+<resources>
+    <string name="app_name">RideUp</string>
+    <string name="driver_error">Unfortunately all our drivers are busy right now. Please try again.</string>
+</resources>
