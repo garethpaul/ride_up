@@ -3,6 +3,7 @@ package com.foursquare.rideup;
 
 
 
+import android.Manifest;
 import android.animation.Animator;
 import android.animation.AnimatorListenerAdapter;
 import android.animation.ObjectAnimator;
@@ -10,11 +11,13 @@ import android.animation.TypeEvaluator;
 import android.animation.ValueAnimator;
 import android.content.Context;
 import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.graphics.Color;
 import android.graphics.drawable.ColorDrawable;
 import android.os.Handler;
 import android.support.annotation.DrawableRes;
 import android.support.annotation.NonNull;
+import android.support.v4.app.ActivityCompat;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
@@ -59,6 +62,7 @@ public class MainActivity extends AppCompatActivity {
     private float lat;
     private float lng;
     private LocationServices locationServices;
+    private static final int PERMISSIONS_LOCATION = 0;
 
 
     @Override
@@ -71,6 +75,14 @@ public class MainActivity extends AppCompatActivity {
 
         MapboxAccountManager.start(this, Constants.MAPBOX_ACCESS_TOKEN);
         setContentView(R.layout.activity_main);
+
+        // Setup Permissions
+        locationServices = LocationServices.getLocationServices(MainActivity.this);
+        if (!locationServices.areLocationPermissionsGranted()) {
+            ActivityCompat.requestPermissions(this, new String[]{
+                    Manifest.permission.ACCESS_COARSE_LOCATION,
+                    Manifest.permission.ACCESS_FINE_LOCATION}, PERMISSIONS_LOCATION);
+        }
 
         // Request a ride
         Button confirmBtn = (Button) findViewById(R.id.confirmBtn);
@@ -106,7 +118,7 @@ public class MainActivity extends AppCompatActivity {
                 })
                 .build());
 
-        locationServices = LocationServices.getLocationServices(MainActivity.this);
+
 
         mapView = (MapView) findViewById(R.id.mapView);
         mapView.onCreate(savedInstanceState);
@@ -300,4 +312,15 @@ public class MainActivity extends AppCompatActivity {
 
         return radians2degrees * Math.atan2(a, b);
     }
+
+    @Override
+    public void onRequestPermissionsResult(
+            int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+        if (requestCode == PERMISSIONS_LOCATION) {
+            if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                getClosestPlace();
+            }
+        }
+    }
+
 }
