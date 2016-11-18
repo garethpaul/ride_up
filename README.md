@@ -2,7 +2,7 @@
 
 A ride sharing sample utilizing Foursquare PlacePicker SDK.
 
-![Alt text](/screenshots/ride_up_screenshot.gif?raw=true "RideUp Screenshot")
+<img src="/screenshots/ride_up_screenshot.gif?raw=true" width="300px">
 
 ## Getting Started
 
