@@ -14,6 +14,7 @@ import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.graphics.Color;
 import android.graphics.drawable.ColorDrawable;
+import android.os.Bundle;
 import android.os.Handler;
 import android.support.annotation.DrawableRes;
 import android.support.annotation.NonNull;
@@ -21,7 +22,6 @@ import android.support.v4.app.ActivityCompat;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
-import android.os.Bundle;
 import android.support.v7.view.ContextThemeWrapper;
 import android.util.Log;
 import android.view.View;
@@ -34,20 +34,19 @@ import com.bumptech.glide.Glide;
 import com.foursquare.api.types.Venue;
 import com.foursquare.placepicker.PlacePicker;
 import com.foursquare.placepicker.PlacePickerSdk;
-import com.mapbox.mapboxsdk.MapboxAccountManager;
+import com.google.android.gms.location.LocationServices;
+import com.mapbox.mapboxsdk.Mapbox;
 import com.mapbox.mapboxsdk.annotations.Icon;
 import com.mapbox.mapboxsdk.annotations.IconFactory;
-import com.mapbox.mapboxsdk.annotations.Marker;
 import com.mapbox.mapboxsdk.annotations.MarkerView;
 import com.mapbox.mapboxsdk.annotations.MarkerViewOptions;
-import com.mapbox.mapboxsdk.camera.CameraPosition;
 import com.mapbox.mapboxsdk.camera.CameraUpdateFactory;
 import com.mapbox.mapboxsdk.geometry.LatLng;
 import com.mapbox.mapboxsdk.geometry.LatLngBounds;
-import com.mapbox.mapboxsdk.location.LocationServices;
 import com.mapbox.mapboxsdk.maps.MapView;
 import com.mapbox.mapboxsdk.maps.MapboxMap;
 import com.mapbox.mapboxsdk.maps.OnMapReadyCallback;
+
 import java.util.Random;
 
 
@@ -61,7 +60,6 @@ public class MainActivity extends AppCompatActivity {
     private MapboxMap mapboxMap;
     private float lat;
     private float lng;
-    private LocationServices locationServices;
     private static final int PERMISSIONS_LOCATION = 0;
 
 
@@ -73,12 +71,12 @@ public class MainActivity extends AppCompatActivity {
         getSupportActionBar().setCustomView(R.layout.action_bar_custom);
         getSupportActionBar().setBackgroundDrawable(new ColorDrawable(Color.parseColor("#FAFAFA")));
 
-        MapboxAccountManager.start(this, Constants.MAPBOX_ACCESS_TOKEN);
+        Mapbox.getInstance(this, Constants.MAPBOX_ACCESS_TOKEN);
         setContentView(R.layout.activity_main);
 
         // Setup Permissions
-        locationServices = LocationServices.getLocationServices(MainActivity.this);
-        if (!locationServices.areLocationPermissionsGranted()) {
+        if (ActivityCompat.checkSelfPermission(this,
+                Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
             ActivityCompat.requestPermissions(this, new String[]{
                     Manifest.permission.ACCESS_COARSE_LOCATION,
                     Manifest.permission.ACCESS_FINE_LOCATION}, PERMISSIONS_LOCATION);
@@ -193,6 +191,17 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
+    @Override
+    protected void onStart() {
+        super.onStart();
+        mapView.onStart();
+    }
+
+    @Override
+    protected void onStop() {
+        super.onStop();
+        mapView.onStop();
+    }
 
     @Override
     protected void onDestroy() {
