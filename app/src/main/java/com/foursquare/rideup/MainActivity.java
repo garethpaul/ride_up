@@ -126,7 +126,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void requestRide() {
-        AlertDialog.Builder builder = new AlertDialog.Builder(new ContextThemeWrapper(this, R.style.AlertDialogCustom));
+        AlertDialog.Builder builder = new AlertDialog.Builder(this, R.style.AlertDialogCustom);
 
         builder.setMessage(R.string.driver_error)
                 .setTitle("Error");
