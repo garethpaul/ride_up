@@ -19,12 +19,12 @@ public class Constants {
 2. Libraries via Gradle
 
 ```
-compile 'com.squareup.okhttp3:okhttp:3.4.2'
-compile 'com.android.support:appcompat-v7:23.2.0'
-compile 'com.foursquare:placepicker:0.6.1'
-compile 'com.github.bumptech.glide:glide:3.7.0'
+compile 'com.squareup.okhttp3:okhttp:3.9.0'
+compile 'com.android.support:appcompat-v7:26.1.0'
+compile 'com.foursquare:placepicker:0.7.0'
+compile 'com.github.bumptech.glide:glide:3.8.0'
 dependencies {
-    compile ('com.mapbox.mapboxsdk:mapbox-android-sdk:4.2.0-beta.5@aar') {
+    compile ('com.mapbox.mapboxsdk:mapbox-android-sdk:5.1.4@aar') {
         transitive=true
     }
 }
