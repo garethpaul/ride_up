@@ -83,7 +83,7 @@ public class MainActivity extends AppCompatActivity {
         }
 
         // Request a ride
-        Button confirmBtn = (Button) findViewById(R.id.confirmBtn);
+        Button confirmBtn = findViewById(R.id.confirmBtn);
         confirmBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -93,7 +93,7 @@ public class MainActivity extends AppCompatActivity {
         });
 
 
-        pickupLocation = (TextView) findViewById(R.id.pickUpTextView);
+        pickupLocation = findViewById(R.id.pickUpTextView);
         pickupLocation.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -118,7 +118,7 @@ public class MainActivity extends AppCompatActivity {
 
 
 
-        mapView = (MapView) findViewById(R.id.mapView);
+        mapView = findViewById(R.id.mapView);
         mapView.onCreate(savedInstanceState);
 
 
