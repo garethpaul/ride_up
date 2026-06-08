@@ -19,6 +19,7 @@ Priority:
 - Make location permission behavior visible
 - Maintain `make check` for Android credential and application ID contracts
 - Keep Gradle package metadata aligned with the manifest and landing page
+- Keep completed maintenance plans under `docs/plans`
 - Treat support libraries and Gradle versions as legacy
 
 Next priorities:

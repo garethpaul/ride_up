@@ -11,3 +11,5 @@
   legacy Gradle configuration.
 - Aligned the Gradle `applicationId` with the manifest package and landing-page
   Play link, and added static validation for that contract.
+- Added canonical `docs/plans` coverage and made the Android contract checker
+  require completed plans.

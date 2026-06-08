@@ -12,11 +12,16 @@ This README is based on the checked-in source, manifests, scripts, and repositor
 ## Repository Contents
 
 - `README.md` - project overview and local usage notes
+- `CHANGES.md` - maintenance history for Android contract checks
+- `Makefile` - local verification entry points
 - `build.gradle` - Android or Gradle build configuration
 - `app` - source or example code
+- `docs/plans` - completed maintenance plans for the current baseline
 - `gradle` - source or example code
 - `gradlew` - Android or Gradle build configuration
 - `javascripts` - source or example code
+- `plans` - historical implementation notes
+- `scripts` - static Android contract validators
 - `SECURITY.md` - security reporting and disclosure guidance
 - `stylesheets` - source or example code
 - `VISION.md` - project direction and maintenance guardrails
@@ -61,6 +66,7 @@ secrets.
   and landing-page package-link contract check.
   Set `RUN_LEGACY_GRADLE=1` to also run the legacy Gradle wrapper on a machine
   with SDK 23 and the required archived Android Gradle plugin dependencies.
+- The static checker also requires completed canonical plans under `docs/plans`.
 
 When the required SDK or runtime is unavailable, use static checks and source review first, then verify on a machine that has the matching platform toolchain.
 
@@ -80,6 +86,8 @@ When the required SDK or runtime is unavailable, use static checks and source re
 - This looks like a legacy Android project or sample. Expect Android SDK, Gradle, and support-library versions to matter.
 - See `SECURITY.md` for vulnerability reporting and safe research guidance.
 - See `VISION.md` for project direction and contribution guardrails.
+- See `docs/plans/2026-06-08-ride-up-baseline.md` for the canonical Android
+  contract validation baseline.
 
 ## Contributing
 
