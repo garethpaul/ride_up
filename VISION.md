@@ -45,3 +45,6 @@ never imply real ride dispatch without an implemented backend.
 - Silent location upload or tracking
 - Real dispatch/payment behavior without a full product contract
 - Dependency upgrades mixed with feature rewrites
+
+This list is a roadmap guardrail, not a permanent rule.
+Strong user demand and strong technical rationale can change it.
