@@ -2,6 +2,8 @@
 
 ## 2026-06-08
 
+- Replaced a missing PlacePicker image placeholder drawable reference and
+  added static drawable reference validation.
 - Disabled Android app backup and added static validation for the manifest
   backup policy.
 - Added a static Android contract check for the local credential template,

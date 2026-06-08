@@ -21,6 +21,7 @@ Priority:
 - Keep Gradle package metadata aligned with the manifest and landing page
 - Keep completed maintenance plans under `docs/plans`
 - Keep Android backup disabled for local credential and location-adjacent data
+- Keep Java resource references aligned with checked-in Android drawables
 - Treat support libraries and Gradle versions as legacy
 
 Next priorities:

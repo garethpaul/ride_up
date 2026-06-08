@@ -69,6 +69,8 @@ secrets.
 - The static checker also requires completed canonical plans under `docs/plans`.
 - The Android manifest disables app backup so local credentials and
   location-adjacent state are not included in device backups.
+- The static checker verifies Java `R.drawable.*` references resolve to
+  checked-in drawable resources.
 
 When the required SDK or runtime is unavailable, use static checks and source review first, then verify on a machine that has the matching platform toolchain.
 
@@ -92,6 +94,8 @@ When the required SDK or runtime is unavailable, use static checks and source re
   contract validation baseline.
 - See `docs/plans/2026-06-08-android-backup-policy.md` for the app-backup
   privacy guard baseline.
+- See `docs/plans/2026-06-08-drawable-reference-contract.md` for the Android
+  drawable resource guard.
 
 ## Contributing
 

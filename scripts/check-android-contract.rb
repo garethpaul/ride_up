@@ -45,6 +45,7 @@ build_gradle = 'build.gradle'
 app_build_gradle = 'app/build.gradle'
 manifest = 'app/src/main/AndroidManifest.xml'
 landing_page = 'index.html'
+drawable_root = 'app/src/main/res/drawable'
 
 if file?(main_activity)
   source = read(main_activity)
@@ -121,6 +122,24 @@ if file?(landing_page)
   end
 else
   failures << "#{landing_page} is missing"
+end
+
+if Dir.exist?(ROOT.join(drawable_root))
+  drawable_names = Dir.glob(ROOT.join(drawable_root, '*'))
+                      .select { |path| File.file?(path) }
+                      .map { |path| File.basename(path, '.*') }
+                      .uniq
+
+  Dir.glob(ROOT.join('app/src/main/java/**/*.java')).sort.each do |java_path|
+    source = File.read(java_path)
+    source.scan(/\bR\.drawable\.([A-Za-z_][A-Za-z0-9_]*)\b/).flatten.uniq.each do |drawable|
+      next if drawable_names.include?(drawable)
+
+      failures << "#{rel(java_path)} references missing drawable #{drawable}"
+    end
+  end
+else
+  failures << "#{drawable_root} is missing"
 end
 
 if failures.empty?

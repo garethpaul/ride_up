@@ -111,7 +111,7 @@ public class MainActivity extends AppCompatActivity {
                     public void loadImage(Context context, ImageView v, String url) {
                         Glide.with(context)
                                 .load(url)
-                                .placeholder(R.drawable.category_none)
+                                .placeholder(R.drawable.ic_circle)
                                 .dontAnimate()
                                 .into(v);
                     }
