@@ -1,0 +1,11 @@
+# Changes
+
+## 2026-06-08
+
+- Added a static Android contract check for the local credential template,
+  ignored `Constants.java`, HTTPS repository URLs, and required permissions.
+- Added `Constants.java.example` with non-secret placeholders for Mapbox and
+  Foursquare credentials.
+- Documented the local credential setup and `make verify` command.
+- Added Google Maven and switched the Sonatype repository URL to HTTPS in the
+  legacy Gradle configuration.

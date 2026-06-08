@@ -1,0 +1,80 @@
+#!/usr/bin/env ruby
+# frozen_string_literal: true
+
+require 'pathname'
+
+ROOT = Pathname.new(__dir__).parent.expand_path
+failures = []
+
+def read(path)
+  ROOT.join(path).read
+end
+
+def file?(path)
+  ROOT.join(path).file?
+end
+
+main_activity = 'app/src/main/java/com/foursquare/rideup/MainActivity.java'
+constants_example = 'app/src/main/java/com/foursquare/rideup/Constants.java.example'
+gitignore = '.gitignore'
+build_gradle = 'build.gradle'
+manifest = 'app/src/main/AndroidManifest.xml'
+
+if file?(main_activity)
+  source = read(main_activity)
+  %w[MAPBOX_ACCESS_TOKEN FOURSQUARE_CLIENT_KEY FOURSQUARE_CLIENT_SECRET].each do |constant|
+    failures << "#{main_activity} does not reference Constants.#{constant}" unless source.include?("Constants.#{constant}")
+  end
+else
+  failures << "#{main_activity} is missing"
+end
+
+if file?(constants_example)
+  example = read(constants_example)
+  failures << "#{constants_example} must define class Constants" unless example.match?(/\bclass\s+Constants\b/)
+  %w[MAPBOX_ACCESS_TOKEN FOURSQUARE_CLIENT_KEY FOURSQUARE_CLIENT_SECRET].each do |constant|
+    unless example.match?(/\b#{constant}\b\s*=\s*"[^"]+"/)
+      failures << "#{constants_example} must define #{constant}"
+      next
+    end
+    value = example[/\b#{constant}\b\s*=\s*"([^"]+)"/, 1]
+    failures << "#{constants_example} must keep #{constant} as a placeholder" unless value.start_with?('replace-with-')
+  end
+else
+  failures << "#{constants_example} is missing; add a non-secret template for local credentials"
+end
+
+if file?(gitignore)
+  ignored = read(gitignore).lines.map(&:strip)
+  failures << "#{gitignore} must keep local Constants.java ignored" unless ignored.include?('Constants.java')
+else
+  failures << "#{gitignore} is missing"
+end
+
+if file?(build_gradle)
+  read(build_gradle).scan(/maven\s*\{\s*url\s+["'](http:\/\/[^"']+)["']/).flatten.each do |url|
+    failures << "#{build_gradle} uses insecure repository URL #{url}"
+  end
+else
+  failures << "#{build_gradle} is missing"
+end
+
+if file?(manifest)
+  manifest_source = read(manifest)
+  %w[
+    android.permission.ACCESS_COARSE_LOCATION
+    android.permission.ACCESS_FINE_LOCATION
+    android.permission.INTERNET
+  ].each do |permission|
+    failures << "#{manifest} must declare #{permission}" unless manifest_source.include?(permission)
+  end
+else
+  failures << "#{manifest} is missing"
+end
+
+if failures.empty?
+  puts 'Android contract checks passed'
+else
+  warn "Android contract checks failed:\n- #{failures.join("\n- ")}"
+  exit 1
+end

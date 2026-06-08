@@ -1,0 +1,10 @@
+package com.foursquare.rideup;
+
+final class Constants {
+    static final String MAPBOX_ACCESS_TOKEN = "replace-with-mapbox-access-token";
+    static final String FOURSQUARE_CLIENT_KEY = "replace-with-foursquare-client-key";
+    static final String FOURSQUARE_CLIENT_SECRET = "replace-with-foursquare-client-secret";
+
+    private Constants() {
+    }
+}

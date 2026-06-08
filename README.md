@@ -41,9 +41,14 @@ Additional scan context:
 ```bash
 git clone https://github.com/garethpaul/ride_up.git
 cd ride_up
+cp app/src/main/java/com/foursquare/rideup/Constants.java.example app/src/main/java/com/foursquare/rideup/Constants.java
 ```
 
 The setup commands above are derived from repository files. Legacy mobile, Python, or JavaScript samples may require older SDKs or package versions than a modern workstation uses by default.
+
+Fill the copied `Constants.java` with local Mapbox and Foursquare credentials.
+The real file is ignored by git; keep the checked-in `.example` file free of
+secrets.
 
 ## Running or Using the Project
 
@@ -52,6 +57,9 @@ The setup commands above are derived from repository files. Legacy mobile, Pytho
 ## Testing and Verification
 
 - `./gradlew test` or Android Studio's test runner when the SDK is configured
+- `make verify` runs the static Android credential and manifest contract check.
+  Set `RUN_LEGACY_GRADLE=1` to also run the legacy Gradle wrapper on a machine
+  with SDK 23 and the required archived Android Gradle plugin dependencies.
 
 When the required SDK or runtime is unavailable, use static checks and source review first, then verify on a machine that has the matching platform toolchain.
 
