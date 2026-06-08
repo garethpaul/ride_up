@@ -35,6 +35,11 @@ Contribution rules:
 
 ## Security And Responsible Use
 
+Canonical security policy and reporting:
+
+- [`SECURITY.md`](SECURITY.md)
+
+
 The app requests location and uses third-party mapping/place APIs. Changes
 should keep permissions explicit, avoid storing precise location history, and
 never imply real ride dispatch without an implemented backend.
