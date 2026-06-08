@@ -1,5 +1,8 @@
 # ride_up
 
+<!-- README-OVERVIEW-IMAGE -->
+![Project overview](docs/readme-overview.svg)
+
 ## Overview
 
 `garethpaul/ride_up` is an Android application or sample. A ride sharing clone.
@@ -78,4 +81,3 @@ Keep changes small and tied to the project that is already present in this repos
 Prior README summary:
 
 > RideUp <!-- README-OVERVIEW-IMAGE --> A ride sharing sample utilizing Foursquare PlacePicker SDK. Getting Started 1. Setup new Java Class - Constants.java 2. Libraries via Gradle
-
