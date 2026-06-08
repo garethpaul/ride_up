@@ -67,6 +67,8 @@ secrets.
   Set `RUN_LEGACY_GRADLE=1` to also run the legacy Gradle wrapper on a machine
   with SDK 23 and the required archived Android Gradle plugin dependencies.
 - The static checker also requires completed canonical plans under `docs/plans`.
+- The Android manifest disables app backup so local credentials and
+  location-adjacent state are not included in device backups.
 
 When the required SDK or runtime is unavailable, use static checks and source review first, then verify on a machine that has the matching platform toolchain.
 
@@ -88,6 +90,8 @@ When the required SDK or runtime is unavailable, use static checks and source re
 - See `VISION.md` for project direction and contribution guardrails.
 - See `docs/plans/2026-06-08-ride-up-baseline.md` for the canonical Android
   contract validation baseline.
+- See `docs/plans/2026-06-08-android-backup-policy.md` for the app-backup
+  privacy guard baseline.
 
 ## Contributing
 

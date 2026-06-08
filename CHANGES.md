@@ -2,6 +2,8 @@
 
 ## 2026-06-08
 
+- Disabled Android app backup and added static validation for the manifest
+  backup policy.
 - Added a static Android contract check for the local credential template,
   ignored `Constants.java`, HTTPS repository URLs, and required permissions.
 - Added `Constants.java.example` with non-secret placeholders for Mapbox and

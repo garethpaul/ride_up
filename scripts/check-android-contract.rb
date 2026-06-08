@@ -90,6 +90,7 @@ if file?(manifest)
   manifest_source = read(manifest)
   manifest_package = manifest_source[/<manifest\b[^>]*\bpackage="([^"]+)"/, 1]
   failures << "#{manifest} must declare a package name" if manifest_package.nil? || manifest_package.empty?
+  failures << "#{manifest} must disable Android backups for credential and location safety" unless manifest_source.include?('android:allowBackup="false"')
   %w[
     android.permission.ACCESS_COARSE_LOCATION
     android.permission.ACCESS_FINE_LOCATION
