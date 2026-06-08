@@ -9,3 +9,5 @@
 - Documented the local credential setup and `make verify` command.
 - Added Google Maven and switched the Sonatype repository URL to HTTPS in the
   legacy Gradle configuration.
+- Aligned the Gradle `applicationId` with the manifest package and landing-page
+  Play link, and added static validation for that contract.
