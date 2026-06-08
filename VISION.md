@@ -39,7 +39,7 @@ The app requests location and uses third-party mapping/place APIs. Changes
 should keep permissions explicit, avoid storing precise location history, and
 never imply real ride dispatch without an implemented backend.
 
-## What We Will Not Merge For Now
+## What We Will Not Merge (For Now)
 
 - Checked-in Mapbox or Foursquare credentials
 - Silent location upload or tracking
