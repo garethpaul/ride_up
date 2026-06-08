@@ -1,5 +1,8 @@
 # RideUp
 
+<!-- README-OVERVIEW-IMAGE -->
+![Project overview](docs/readme-overview.svg)
+
 A ride sharing sample utilizing Foursquare PlacePicker SDK.
 
 <img src="/screenshots/ride_up_screenshot.gif?raw=true" width="300px">
