@@ -80,4 +80,4 @@ Keep changes small and tied to the project that is already present in this repos
 
 Prior README summary:
 
-> RideUp <!-- README-OVERVIEW-IMAGE --> A ride sharing sample utilizing Foursquare PlacePicker SDK. Getting Started 1. Setup new Java Class - Constants.java 2. Libraries via Gradle
+> RideUp A ride sharing sample utilizing Foursquare PlacePicker SDK. Getting Started 1. Setup new Java Class - Constants.java 2. Libraries via Gradle
