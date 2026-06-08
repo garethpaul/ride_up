@@ -1,4 +1,4 @@
-.PHONY: lint test build verify
+.PHONY: build check lint test verify
 
 RUN_LEGACY_GRADLE ?= 0
 
@@ -20,3 +20,5 @@ build:
 	fi
 
 verify: lint test build
+
+check: verify

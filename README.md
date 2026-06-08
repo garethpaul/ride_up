@@ -57,7 +57,7 @@ secrets.
 ## Testing and Verification
 
 - `./gradlew test` or Android Studio's test runner when the SDK is configured
-- `make verify` runs the static Android credential, manifest, application ID,
+- `make check` runs the static Android credential, manifest, application ID,
   and landing-page package-link contract check.
   Set `RUN_LEGACY_GRADLE=1` to also run the legacy Gradle wrapper on a machine
   with SDK 23 and the required archived Android Gradle plugin dependencies.
