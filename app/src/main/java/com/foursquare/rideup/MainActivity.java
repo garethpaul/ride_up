@@ -358,6 +358,8 @@ public class MainActivity extends AppCompatActivity {
             if (allLocationPermissionsGranted(grantResults)) {
                 getClosestPlace();
             }
+        } else {
+            super.onRequestPermissionsResult(requestCode, permissions, grantResults);
         }
     }
 

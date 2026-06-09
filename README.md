@@ -80,6 +80,8 @@ secrets.
   location permission is already granted.
 - The static checker verifies the permission callback waits for every requested
   location permission to be granted before starting the current-place lookup.
+- The static checker verifies non-location permission callbacks are forwarded
+  to the superclass instead of being swallowed.
 - The static checker verifies current-place callbacks ignore missing venue or
   venue-location payloads before reading coordinates.
 
@@ -115,6 +117,8 @@ When the required SDK or runtime is unavailable, use static checks and source re
   startup location permission guard.
 - See `docs/plans/2026-06-09-location-permission-result-guard.md` for the
   location permission callback guard.
+- See `docs/plans/2026-06-09-permission-result-super-forwarding.md` for the
+  non-location permission callback forwarding guard.
 - See `docs/plans/2026-06-09-venue-location-guard.md` for the PlacePicker and
   current-place venue-location guard.
 

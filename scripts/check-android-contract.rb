@@ -132,6 +132,10 @@ if file?(main_activity)
     if permission_result.include?('grantResults[0] == PackageManager.PERMISSION_GRANTED')
       failures << "#{main_activity} must not check only the first location permission result"
     end
+
+    unless permission_result.include?('super.onRequestPermissionsResult(requestCode, permissions, grantResults);')
+      failures << "#{main_activity} must forward non-location permission results to the superclass"
+    end
   end
 
   unless source.include?('private boolean allLocationPermissionsGranted(int[] grantResults)') &&

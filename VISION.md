@@ -26,6 +26,7 @@ Priority:
 - Keep PlacePicker result handling guarded before reading venues or map state
 - Keep startup current-place lookup behind granted location permission
 - Keep permission-result handling gated on every requested location grant
+- Keep unrelated permission-result callbacks forwarded to the superclass
 - Keep PlacePicker and current-place coordinates guarded behind venue locations
 - Treat support libraries and Gradle versions as legacy
 

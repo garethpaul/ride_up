@@ -2,6 +2,8 @@
 
 ## 2026-06-09
 
+- Forwarded non-location permission callbacks to the superclass and added
+  static validation so unrelated permission results are not swallowed.
 - Guarded PlacePicker and current-place venue locations before reading
   coordinates, with static validation for both paths.
 - Required every requested location permission to be granted before the
