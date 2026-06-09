@@ -24,6 +24,7 @@ Priority:
 - Keep Java resource references aligned with checked-in Android drawables
 - Keep landing-page local asset references aligned with checked-in files
 - Keep PlacePicker result handling guarded before reading venues or map state
+- Keep startup current-place lookup behind granted location permission
 - Treat support libraries and Gradle versions as legacy
 
 Next priorities:

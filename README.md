@@ -75,6 +75,8 @@ secrets.
   screenshot assets resolve inside the repository.
 - The static checker also verifies PlacePicker result handling guards null
   result data, missing venue payloads, and map updates before Mapbox is ready.
+- The static checker verifies startup current-place lookup only runs after
+  location permission is already granted.
 
 When the required SDK or runtime is unavailable, use static checks and source review first, then verify on a machine that has the matching platform toolchain.
 
@@ -104,6 +106,8 @@ When the required SDK or runtime is unavailable, use static checks and source re
   local asset guard.
 - See `docs/plans/2026-06-09-placepicker-result-guards.md` for the PlacePicker
   result-handling guard.
+- See `docs/plans/2026-06-09-location-permission-startup-guard.md` for the
+  startup location permission guard.
 
 ## Contributing
 

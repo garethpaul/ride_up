@@ -30,6 +30,27 @@ def normalize_landing_asset(reference)
   reference.split(/[?#]/, 2).first.sub(%r{\A/}, '')
 end
 
+def java_method_source(source, signature)
+  start_index = source.index(signature)
+  return nil unless start_index
+
+  brace_index = source.index('{', start_index)
+  return nil unless brace_index
+
+  depth = 0
+  index = brace_index
+  while index < source.length
+    character = source[index, 1]
+    depth += 1 if character == '{'
+    depth -= 1 if character == '}'
+    return source[start_index..index] if depth.zero?
+
+    index += 1
+  end
+
+  nil
+end
+
 if CANONICAL_PLAN.file?
   # The canonical plan documents the current credential and package checks.
 else
@@ -73,6 +94,23 @@ if file?(main_activity)
 
   unless source.include?('if (mapboxMap != null)')
     failures << "#{main_activity} must guard map updates until Mapbox is ready"
+  end
+
+  on_create = java_method_source(source, 'protected void onCreate(Bundle savedInstanceState)')
+  if on_create.nil?
+    failures << "#{main_activity} onCreate could not be validated"
+  else
+    unless on_create.include?('boolean hasLocationPermission = locationServices.areLocationPermissionsGranted();')
+      failures << "#{main_activity} must cache the startup location permission state"
+    end
+
+    unless on_create.match?(/if\s*\(\s*hasLocationPermission\s*\)\s*\{\s*getClosestPlace\(\);\s*\}/m)
+      failures << "#{main_activity} must only fetch the closest place during startup when location permission is already granted"
+    end
+
+    if on_create.scan('getClosestPlace();').length > 1
+      failures << "#{main_activity} onCreate must not fetch the closest place outside the startup permission guard"
+    end
   end
 else
   failures << "#{main_activity} is missing"

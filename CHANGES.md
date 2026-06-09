@@ -2,6 +2,8 @@
 
 ## 2026-06-09
 
+- Deferred startup current-place lookup until location permission is already
+  granted and added static validation for that flow.
 - Guarded PlacePicker result handling against null result data, missing venue
   payloads, and map updates before Mapbox is ready.
 - Added static validation for landing-page local asset references so checked-in

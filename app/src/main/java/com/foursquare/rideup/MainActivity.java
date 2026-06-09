@@ -78,7 +78,8 @@ public class MainActivity extends AppCompatActivity {
 
         // Setup Permissions
         locationServices = LocationServices.getLocationServices(MainActivity.this);
-        if (!locationServices.areLocationPermissionsGranted()) {
+        boolean hasLocationPermission = locationServices.areLocationPermissionsGranted();
+        if (!hasLocationPermission) {
             ActivityCompat.requestPermissions(this, new String[]{
                     Manifest.permission.ACCESS_COARSE_LOCATION,
                     Manifest.permission.ACCESS_FINE_LOCATION}, PERMISSIONS_LOCATION);
@@ -123,8 +124,9 @@ public class MainActivity extends AppCompatActivity {
         mapView = (MapView) findViewById(R.id.mapView);
         mapView.onCreate(savedInstanceState);
 
-
-        getClosestPlace();
+        if (hasLocationPermission) {
+            getClosestPlace();
+        }
     }
 
     private void requestRide() {
