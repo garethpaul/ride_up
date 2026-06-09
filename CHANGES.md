@@ -2,6 +2,8 @@
 
 ## 2026-06-09
 
+- Declared the launcher activity exported state explicitly and added static
+  validation for that manifest contract.
 - Removed tracked IntelliJ `.idea` metadata and added static checker coverage
   for local IDE ignore rules.
 - Forwarded non-location permission callbacks to the superclass and added

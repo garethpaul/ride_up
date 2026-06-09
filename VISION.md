@@ -22,6 +22,7 @@ Priority:
 - Keep Gradle package metadata aligned with the manifest and landing page
 - Keep completed maintenance plans under `docs/plans`
 - Keep Android backup disabled for local credential and location-adjacent data
+- Keep launcher activity exported state explicit in the manifest
 - Keep Java resource references aligned with checked-in Android drawables
 - Keep landing-page local asset references aligned with checked-in files
 - Keep PlacePicker result handling guarded before reading venues or map state

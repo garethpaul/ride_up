@@ -62,13 +62,16 @@ secrets.
 ## Testing and Verification
 
 - `./gradlew test` or Android Studio's test runner when the SDK is configured
-- `make check` runs the static Android credential, manifest, application ID,
-  landing-page package-link, and local landing asset contract check.
+- `make check` runs the static Android credential, manifest, launcher export,
+  application ID, landing-page package-link, and local landing asset contract
+  check.
   Set `RUN_LEGACY_GRADLE=1` to also run the legacy Gradle wrapper on a machine
   with SDK 23 and the required archived Android Gradle plugin dependencies.
 - The static checker also requires completed canonical plans under `docs/plans`.
 - The Android manifest disables app backup so local credentials and
   location-adjacent state are not included in device backups.
+- The static checker verifies the launcher activity explicitly declares its
+  exported state.
 - The static checker verifies Java `R.drawable.*` references resolve to
   checked-in drawable resources.
 - The static checker verifies landing-page local stylesheets, favicon, and
@@ -124,6 +127,8 @@ When the required SDK or runtime is unavailable, use static checks and source re
   current-place venue-location guard.
 - See `docs/plans/2026-06-09-ide-metadata-ignore.md` for local IDE metadata
   ignore coverage.
+- See `docs/plans/2026-06-09-launcher-export-contract.md` for the launcher
+  activity exported-state contract.
 
 ## Contributing
 

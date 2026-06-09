@@ -7,6 +7,7 @@ ROOT = Pathname.new(__dir__).parent.expand_path
 DOCS_PLANS = ROOT.join('docs/plans')
 CANONICAL_PLAN = DOCS_PLANS.join('2026-06-08-ride-up-baseline.md')
 IDE_METADATA_PLAN = DOCS_PLANS.join('2026-06-09-ide-metadata-ignore.md')
+LAUNCHER_EXPORT_PLAN = DOCS_PLANS.join('2026-06-09-launcher-export-contract.md')
 failures = []
 
 def read(path)
@@ -59,6 +60,7 @@ else
 end
 
 failures << "#{rel(IDE_METADATA_PLAN)} is missing" unless IDE_METADATA_PLAN.file?
+failures << "#{rel(LAUNCHER_EXPORT_PLAN)} is missing" unless LAUNCHER_EXPORT_PLAN.file?
 
 docs_plans = Dir.glob(DOCS_PLANS.join('*.md')).sort
 if docs_plans.empty?
@@ -194,6 +196,9 @@ if file?(manifest)
   manifest_package = manifest_source[/<manifest\b[^>]*\bpackage="([^"]+)"/, 1]
   failures << "#{manifest} must declare a package name" if manifest_package.nil? || manifest_package.empty?
   failures << "#{manifest} must disable Android backups for credential and location safety" unless manifest_source.include?('android:allowBackup="false"')
+  unless manifest_source.match?(/<activity\b[^>]*android:name="\.MainActivity"[^>]*android:exported="true"/m)
+    failures << "#{manifest} must explicitly export the launcher MainActivity"
+  end
   %w[
     android.permission.ACCESS_COARSE_LOCATION
     android.permission.ACCESS_FINE_LOCATION

@@ -29,6 +29,8 @@ Helpful reports include:
 - Review found network clients, sockets, web APIs, or service endpoints; changes in those areas should receive security-focused review before merge.
 - Review found mobile permission or privacy-sensitive data handling; changes in those areas should receive security-focused review before merge.
 - Review found file, document, data, or media parsing flows; changes in those areas should receive security-focused review before merge.
+- Launcher activity exported state should stay explicit in the manifest so
+  platform compatibility and entry-point exposure are reviewed together.
 - Landing-page local asset references should resolve inside the repository;
   parent-directory escapes or missing local files should be treated as
   suspicious.
