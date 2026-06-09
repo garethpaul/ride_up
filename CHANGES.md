@@ -2,6 +2,8 @@
 
 ## 2026-06-09
 
+- Guarded PlacePicker result handling against null result data, missing venue
+  payloads, and map updates before Mapbox is ready.
 - Added static validation for landing-page local asset references so checked-in
   stylesheets, favicon, and screenshots cannot drift or escape the repository.
 

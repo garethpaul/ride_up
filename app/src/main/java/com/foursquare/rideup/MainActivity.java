@@ -181,12 +181,22 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         if (resultCode == PlacePicker.PLACE_PICKED_RESULT_CODE) {
+            if (data == null) {
+                return;
+            }
+
             Venue place = data.getParcelableExtra(PlacePicker.EXTRA_PLACE);
+            if (place == null) {
+                return;
+            }
+
             pickupLocation.setText(place.getName());
-            mapboxMap.clear();
-            mapboxMap.addMarker(new MarkerViewOptions()
-                    .position(new LatLng(place.getLocation().getLat(), place.getLocation().getLng()))
-                    .title("Pick Up Location"));
+            if (mapboxMap != null) {
+                mapboxMap.clear();
+                mapboxMap.addMarker(new MarkerViewOptions()
+                        .position(new LatLng(place.getLocation().getLat(), place.getLocation().getLng()))
+                        .title("Pick Up Location"));
+            }
 
         } else {
             super.onActivityResult(requestCode, resultCode, data);

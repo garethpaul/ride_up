@@ -62,6 +62,18 @@ if file?(main_activity)
   %w[MAPBOX_ACCESS_TOKEN FOURSQUARE_CLIENT_KEY FOURSQUARE_CLIENT_SECRET].each do |constant|
     failures << "#{main_activity} does not reference Constants.#{constant}" unless source.include?("Constants.#{constant}")
   end
+
+  unless source.include?('if (data == null)')
+    failures << "#{main_activity} must ignore PlacePicker results with null Intent data"
+  end
+
+  unless source.include?('if (place == null)')
+    failures << "#{main_activity} must ignore PlacePicker results without a Venue payload"
+  end
+
+  unless source.include?('if (mapboxMap != null)')
+    failures << "#{main_activity} must guard map updates until Mapbox is ready"
+  end
 else
   failures << "#{main_activity} is missing"
 end
