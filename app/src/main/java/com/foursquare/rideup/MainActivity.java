@@ -325,11 +325,25 @@ public class MainActivity extends AppCompatActivity {
         return radians2degrees * Math.atan2(a, b);
     }
 
+    private boolean allLocationPermissionsGranted(int[] grantResults) {
+        if (grantResults.length == 0) {
+            return false;
+        }
+
+        for (int result : grantResults) {
+            if (result != PackageManager.PERMISSION_GRANTED) {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
     @Override
     public void onRequestPermissionsResult(
             int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
         if (requestCode == PERMISSIONS_LOCATION) {
-            if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+            if (allLocationPermissionsGranted(grantResults)) {
                 getClosestPlace();
             }
         }

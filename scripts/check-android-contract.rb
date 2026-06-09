@@ -112,6 +112,26 @@ if file?(main_activity)
       failures << "#{main_activity} onCreate must not fetch the closest place outside the startup permission guard"
     end
   end
+
+  permission_result = java_method_source(source, 'public void onRequestPermissionsResult(')
+  if permission_result.nil?
+    failures << "#{main_activity} onRequestPermissionsResult could not be validated"
+  else
+    unless permission_result.include?('allLocationPermissionsGranted(grantResults)')
+      failures << "#{main_activity} must require every requested location permission grant before fetching the closest place"
+    end
+
+    if permission_result.include?('grantResults[0] == PackageManager.PERMISSION_GRANTED')
+      failures << "#{main_activity} must not check only the first location permission result"
+    end
+  end
+
+  unless source.include?('private boolean allLocationPermissionsGranted(int[] grantResults)') &&
+         source.include?('if (grantResults.length == 0)') &&
+         source.include?('for (int result : grantResults)') &&
+         source.include?('result != PackageManager.PERMISSION_GRANTED')
+    failures << "#{main_activity} must define allLocationPermissionsGranted(int[]) with empty-result and per-result denial checks"
+  end
 else
   failures << "#{main_activity} is missing"
 end

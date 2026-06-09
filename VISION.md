@@ -25,6 +25,7 @@ Priority:
 - Keep landing-page local asset references aligned with checked-in files
 - Keep PlacePicker result handling guarded before reading venues or map state
 - Keep startup current-place lookup behind granted location permission
+- Keep permission-result handling gated on every requested location grant
 - Treat support libraries and Gradle versions as legacy
 
 Next priorities:

@@ -77,6 +77,8 @@ secrets.
   result data, missing venue payloads, and map updates before Mapbox is ready.
 - The static checker verifies startup current-place lookup only runs after
   location permission is already granted.
+- The static checker verifies the permission callback waits for every requested
+  location permission to be granted before starting the current-place lookup.
 
 When the required SDK or runtime is unavailable, use static checks and source review first, then verify on a machine that has the matching platform toolchain.
 
@@ -108,6 +110,8 @@ When the required SDK or runtime is unavailable, use static checks and source re
   result-handling guard.
 - See `docs/plans/2026-06-09-location-permission-startup-guard.md` for the
   startup location permission guard.
+- See `docs/plans/2026-06-09-location-permission-result-guard.md` for the
+  location permission callback guard.
 
 ## Contributing
 

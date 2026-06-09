@@ -2,6 +2,8 @@
 
 ## 2026-06-09
 
+- Required every requested location permission to be granted before the
+  permission callback starts the current-place lookup.
 - Deferred startup current-place lookup until location permission is already
   granted and added static validation for that flow.
 - Guarded PlacePicker result handling against null result data, missing venue
