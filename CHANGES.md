@@ -2,6 +2,8 @@
 
 ## 2026-06-09
 
+- Guarded PlacePicker and current-place venue locations before reading
+  coordinates, with static validation for both paths.
 - Required every requested location permission to be granted before the
   permission callback starts the current-place lookup.
 - Deferred startup current-place lookup until location permission is already

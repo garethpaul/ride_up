@@ -149,6 +149,14 @@ public class MainActivity extends AppCompatActivity {
         PlacePickerSdk.get().getCurrentPlace(new PlacePickerSdk.CurrentPlaceResult() {
             @Override
             public void success(Venue venue, boolean confident) {
+                if (venue == null) {
+                    return;
+                }
+
+                if (venue.getLocation() == null) {
+                    return;
+                }
+
                 lat = venue.getLocation().getLat();
                 lng = venue.getLocation().getLng();
 
@@ -189,6 +197,10 @@ public class MainActivity extends AppCompatActivity {
 
             Venue place = data.getParcelableExtra(PlacePicker.EXTRA_PLACE);
             if (place == null) {
+                return;
+            }
+
+            if (place.getLocation() == null) {
                 return;
             }
 

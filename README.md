@@ -74,11 +74,14 @@ secrets.
 - The static checker verifies landing-page local stylesheets, favicon, and
   screenshot assets resolve inside the repository.
 - The static checker also verifies PlacePicker result handling guards null
-  result data, missing venue payloads, and map updates before Mapbox is ready.
+  result data, missing venue and venue-location payloads, and map updates
+  before Mapbox is ready.
 - The static checker verifies startup current-place lookup only runs after
   location permission is already granted.
 - The static checker verifies the permission callback waits for every requested
   location permission to be granted before starting the current-place lookup.
+- The static checker verifies current-place callbacks ignore missing venue or
+  venue-location payloads before reading coordinates.
 
 When the required SDK or runtime is unavailable, use static checks and source review first, then verify on a machine that has the matching platform toolchain.
 
@@ -112,6 +115,8 @@ When the required SDK or runtime is unavailable, use static checks and source re
   startup location permission guard.
 - See `docs/plans/2026-06-09-location-permission-result-guard.md` for the
   location permission callback guard.
+- See `docs/plans/2026-06-09-venue-location-guard.md` for the PlacePicker and
+  current-place venue-location guard.
 
 ## Contributing
 

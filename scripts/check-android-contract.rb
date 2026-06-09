@@ -92,8 +92,16 @@ if file?(main_activity)
     failures << "#{main_activity} must ignore PlacePicker results without a Venue payload"
   end
 
+  unless source.include?('if (place.getLocation() == null)')
+    failures << "#{main_activity} must ignore PlacePicker results without a Venue location"
+  end
+
   unless source.include?('if (mapboxMap != null)')
     failures << "#{main_activity} must guard map updates until Mapbox is ready"
+  end
+
+  unless source.include?('if (venue == null)') && source.include?('if (venue.getLocation() == null)')
+    failures << "#{main_activity} must ignore current-place results without a Venue location"
   end
 
   on_create = java_method_source(source, 'protected void onCreate(Bundle savedInstanceState)')
