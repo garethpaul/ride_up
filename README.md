@@ -84,6 +84,7 @@ secrets.
   to the superclass instead of being swallowed.
 - The static checker verifies current-place callbacks ignore missing venue or
   venue-location payloads before reading coordinates.
+- The static checker verifies local IDE metadata stays ignored and untracked.
 
 When the required SDK or runtime is unavailable, use static checks and source review first, then verify on a machine that has the matching platform toolchain.
 
@@ -121,6 +122,8 @@ When the required SDK or runtime is unavailable, use static checks and source re
   non-location permission callback forwarding guard.
 - See `docs/plans/2026-06-09-venue-location-guard.md` for the PlacePicker and
   current-place venue-location guard.
+- See `docs/plans/2026-06-09-ide-metadata-ignore.md` for local IDE metadata
+  ignore coverage.
 
 ## Contributing
 

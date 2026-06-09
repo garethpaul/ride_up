@@ -6,6 +6,7 @@ require 'pathname'
 ROOT = Pathname.new(__dir__).parent.expand_path
 DOCS_PLANS = ROOT.join('docs/plans')
 CANONICAL_PLAN = DOCS_PLANS.join('2026-06-08-ride-up-baseline.md')
+IDE_METADATA_PLAN = DOCS_PLANS.join('2026-06-09-ide-metadata-ignore.md')
 failures = []
 
 def read(path)
@@ -56,6 +57,8 @@ if CANONICAL_PLAN.file?
 else
   failures << "#{rel(CANONICAL_PLAN)} is missing"
 end
+
+failures << "#{rel(IDE_METADATA_PLAN)} is missing" unless IDE_METADATA_PLAN.file?
 
 docs_plans = Dir.glob(DOCS_PLANS.join('*.md')).sort
 if docs_plans.empty?
@@ -166,8 +169,15 @@ end
 if file?(gitignore)
   ignored = read(gitignore).lines.map(&:strip)
   failures << "#{gitignore} must keep local Constants.java ignored" unless ignored.include?('Constants.java')
+  failures << "#{gitignore} must keep local .idea metadata ignored" unless ignored.include?('.idea/')
+  failures << "#{gitignore} must keep local IntelliJ module files ignored" unless ignored.include?('*.iml')
 else
   failures << "#{gitignore} is missing"
+end
+
+tracked_ide_metadata = `git ls-files .idea '*.iml'`.split("\n").select { |path| ROOT.join(path).file? }
+unless tracked_ide_metadata.empty?
+  failures << "IDE metadata must not be tracked: #{tracked_ide_metadata.join(', ')}"
 end
 
 if file?(build_gradle)

@@ -2,6 +2,8 @@
 
 ## 2026-06-09
 
+- Removed tracked IntelliJ `.idea` metadata and added static checker coverage
+  for local IDE ignore rules.
 - Forwarded non-location permission callbacks to the superclass and added
   static validation so unrelated permission results are not swallowed.
 - Guarded PlacePicker and current-place venue locations before reading
