@@ -1,5 +1,10 @@
 # Changes
 
+## 2026-06-09
+
+- Added static validation for landing-page local asset references so checked-in
+  stylesheets, favicon, and screenshots cannot drift or escape the repository.
+
 ## 2026-06-08
 
 - Replaced a missing PlacePicker image placeholder drawable reference and

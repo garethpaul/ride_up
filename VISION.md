@@ -22,6 +22,7 @@ Priority:
 - Keep completed maintenance plans under `docs/plans`
 - Keep Android backup disabled for local credential and location-adjacent data
 - Keep Java resource references aligned with checked-in Android drawables
+- Keep landing-page local asset references aligned with checked-in files
 - Treat support libraries and Gradle versions as legacy
 
 Next priorities:

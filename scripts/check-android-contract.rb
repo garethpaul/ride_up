@@ -20,6 +20,16 @@ def rel(path)
   Pathname.new(path).relative_path_from(ROOT).to_s
 end
 
+def local_landing_asset?(reference)
+  !reference.match?(%r{\A(?:https?:)?//}) &&
+    !reference.start_with?('#') &&
+    !reference.start_with?('mailto:')
+end
+
+def normalize_landing_asset(reference)
+  reference.split(/[?#]/, 2).first.sub(%r{\A/}, '')
+end
+
 if CANONICAL_PLAN.file?
   # The canonical plan documents the current credential and package checks.
 else
@@ -119,6 +129,21 @@ if file?(landing_page)
   landing_source = read(landing_page)
   if manifest_package && !landing_source.include?("id=#{manifest_package}")
     failures << "#{landing_page} Google Play link must reference #{manifest_package}"
+  end
+
+  landing_source.scan(/\b(?:src|href)=["']([^"']+)["']/).flatten.each do |reference|
+    next unless local_landing_asset?(reference)
+
+    normalized = normalize_landing_asset(reference)
+    next if normalized.empty?
+
+    asset_path = ROOT.join(normalized).cleanpath
+    unless asset_path.to_s.start_with?("#{ROOT}/")
+      failures << "#{landing_page} local asset #{reference} must stay inside the repository"
+      next
+    end
+
+    failures << "#{landing_page} references missing local asset #{reference}" unless asset_path.file?
   end
 else
   failures << "#{landing_page} is missing"
