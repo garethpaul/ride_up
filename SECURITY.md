@@ -35,6 +35,8 @@ Helpful reports include:
   parent-directory escapes or missing local files should be treated as
   suspicious.
 - Dependency manifests detected: build.gradle, gradle.properties. Dependency updates should preserve lockfiles when present and avoid introducing packages without a clear maintenance reason.
+- Hosted validation installs no project dependencies, grants only read access
+  to repository contents, and pins third-party actions by commit.
 
 ## Mobile Privacy Notes
 

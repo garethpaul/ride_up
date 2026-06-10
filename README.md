@@ -67,6 +67,9 @@ secrets.
   check.
   Set `RUN_LEGACY_GRADLE=1` to also run the legacy Gradle wrapper on a machine
   with SDK 23 and the required archived Android Gradle plugin dependencies.
+- GitHub Actions runs the dependency-free static contract on Ubuntu 24.04. It
+  intentionally does not present the obsolete SDK 23 stack as a supported
+  hosted Android build.
 - The static checker also requires completed canonical plans under `docs/plans`.
 - The Android manifest disables app backup so local credentials and
   location-adjacent state are not included in device backups.
@@ -131,6 +134,8 @@ When the required SDK or runtime is unavailable, use static checks and source re
   ignore coverage.
 - See `docs/plans/2026-06-09-launcher-export-contract.md` for the launcher
   activity exported-state contract.
+- See `docs/plans/2026-06-10-hosted-contract-validation.md` for the hosted
+  structural validation boundary.
 - See `docs/plans/2026-06-10-mapview-lifecycle-guard.md` for the MapView
   lifecycle forwarding guard.
 

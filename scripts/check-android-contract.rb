@@ -2,12 +2,15 @@
 # frozen_string_literal: true
 
 require 'pathname'
+require 'open3'
 
 ROOT = Pathname.new(__dir__).parent.expand_path
 DOCS_PLANS = ROOT.join('docs/plans')
 CANONICAL_PLAN = DOCS_PLANS.join('2026-06-08-ride-up-baseline.md')
 IDE_METADATA_PLAN = DOCS_PLANS.join('2026-06-09-ide-metadata-ignore.md')
 LAUNCHER_EXPORT_PLAN = DOCS_PLANS.join('2026-06-09-launcher-export-contract.md')
+HOSTED_VALIDATION_PLAN = DOCS_PLANS.join('2026-06-10-hosted-contract-validation.md')
+HOSTED_VALIDATION_WORKFLOW = ROOT.join('.github/workflows/check.yml')
 failures = []
 
 def read(path)
@@ -61,6 +64,32 @@ end
 
 failures << "#{rel(IDE_METADATA_PLAN)} is missing" unless IDE_METADATA_PLAN.file?
 failures << "#{rel(LAUNCHER_EXPORT_PLAN)} is missing" unless LAUNCHER_EXPORT_PLAN.file?
+failures << "#{rel(HOSTED_VALIDATION_PLAN)} is missing" unless HOSTED_VALIDATION_PLAN.file?
+
+if ROOT.join('.travis.yml').exist?
+  failures << '.travis.yml is obsolete and must not replace the hosted contract workflow'
+end
+
+if HOSTED_VALIDATION_WORKFLOW.file?
+  workflow = HOSTED_VALIDATION_WORKFLOW.read
+  [
+    'runs-on: ubuntu-24.04',
+    'permissions:',
+    'contents: read',
+    'uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10',
+    'run: make check'
+  ].each do |fragment|
+    failures << "#{rel(HOSTED_VALIDATION_WORKFLOW)} must include #{fragment.inspect}" unless workflow.include?(fragment)
+  end
+
+  workflow.scan(/^\s*uses:\s*([^@\s]+)@([^\s#]+)/).each do |action, revision|
+    unless revision.match?(/\A[a-f0-9]{40}\z/)
+      failures << "#{rel(HOSTED_VALIDATION_WORKFLOW)} action #{action} must be pinned to a full commit SHA"
+    end
+  end
+else
+  failures << "#{rel(HOSTED_VALIDATION_WORKFLOW)} is missing"
+end
 
 docs_plans = Dir.glob(DOCS_PLANS.join('*.md')).sort
 if docs_plans.empty?
@@ -195,9 +224,16 @@ else
   failures << "#{gitignore} is missing"
 end
 
-tracked_ide_metadata = `git ls-files .idea '*.iml'`.split("\n").select { |path| ROOT.join(path).file? }
-unless tracked_ide_metadata.empty?
-  failures << "IDE metadata must not be tracked: #{tracked_ide_metadata.join(', ')}"
+tracked_output, tracked_error, tracked_status = Open3.capture3(
+  'git', '-C', ROOT.to_s, 'ls-files', '.idea', '*.iml'
+)
+if tracked_status.success?
+  tracked_ide_metadata = tracked_output.split("\n").select { |path| ROOT.join(path).file? }
+  unless tracked_ide_metadata.empty?
+    failures << "IDE metadata must not be tracked: #{tracked_ide_metadata.join(', ')}"
+  end
+else
+  failures << "git metadata inspection failed: #{tracked_error.strip}"
 end
 
 if file?(build_gradle)

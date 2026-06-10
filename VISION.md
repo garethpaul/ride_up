@@ -32,6 +32,7 @@ Priority:
 - Keep PlacePicker and current-place coordinates guarded behind venue locations
 - Keep MapView lifecycle forwarding guarded for missing view instances
 - Treat support libraries and Gradle versions as legacy
+- Keep dependency-free Android source contracts enforced in hosted validation
 
 Next priorities:
 
