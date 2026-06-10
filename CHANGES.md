@@ -1,5 +1,10 @@
 # Changes
 
+## 2026-06-10
+
+- Guarded MapView lifecycle forwarding when the map view has not been
+  initialized.
+
 ## 2026-06-09
 
 - Declared the launcher activity exported state explicitly and added static

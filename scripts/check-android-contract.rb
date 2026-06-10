@@ -149,6 +149,24 @@ if file?(main_activity)
          source.include?('result != PackageManager.PERMISSION_GRANTED')
     failures << "#{main_activity} must define allLocationPermissionsGranted(int[]) with empty-result and per-result denial checks"
   end
+
+  {
+    'protected void onDestroy()' => 'mapView.onDestroy();',
+    'protected void onResume()' => 'mapView.onResume();',
+    'protected void onPause()' => 'mapView.onPause();',
+    'protected void onSaveInstanceState(Bundle outState)' => 'mapView.onSaveInstanceState(outState);',
+    'public void onLowMemory()' => 'mapView.onLowMemory();'
+  }.each do |signature, map_view_call|
+    lifecycle_section = java_method_source(source, signature)
+    if lifecycle_section.nil?
+      failures << "#{main_activity} #{signature} could not be validated"
+      next
+    end
+
+    unless lifecycle_section.include?('if (mapView != null)') && lifecycle_section.include?(map_view_call)
+      failures << "#{main_activity} #{signature} must guard #{map_view_call} behind a non-null mapView check"
+    end
+  end
 else
   failures << "#{main_activity} is missing"
 end

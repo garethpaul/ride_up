@@ -87,6 +87,8 @@ secrets.
   to the superclass instead of being swallowed.
 - The static checker verifies current-place callbacks ignore missing venue or
   venue-location payloads before reading coordinates.
+- The static checker verifies MapView lifecycle callbacks guard missing map
+  instances before forwarding lifecycle events.
 - The static checker verifies local IDE metadata stays ignored and untracked.
 
 When the required SDK or runtime is unavailable, use static checks and source review first, then verify on a machine that has the matching platform toolchain.
@@ -129,6 +131,8 @@ When the required SDK or runtime is unavailable, use static checks and source re
   ignore coverage.
 - See `docs/plans/2026-06-09-launcher-export-contract.md` for the launcher
   activity exported-state contract.
+- See `docs/plans/2026-06-10-mapview-lifecycle-guard.md` for the MapView
+  lifecycle forwarding guard.
 
 ## Contributing
 

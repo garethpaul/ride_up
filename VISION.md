@@ -30,6 +30,7 @@ Priority:
 - Keep permission-result handling gated on every requested location grant
 - Keep unrelated permission-result callbacks forwarded to the superclass
 - Keep PlacePicker and current-place coordinates guarded behind venue locations
+- Keep MapView lifecycle forwarding guarded for missing view instances
 - Treat support libraries and Gradle versions as legacy
 
 Next priorities:
