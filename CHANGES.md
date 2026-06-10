@@ -2,6 +2,8 @@
 
 ## 2026-06-10
 
+- Required matching PlacePicker request and result codes before consuming
+  venue data, with superclass forwarding for unrelated activity results.
 - Guarded MapView lifecycle forwarding when the map view has not been
   initialized.
 - Replaced the obsolete Travis Android configuration with dependency-free

@@ -37,6 +37,8 @@ Helpful reports include:
 - Dependency manifests detected: build.gradle, gradle.properties. Dependency updates should preserve lockfiles when present and avoid introducing packages without a clear maintenance reason.
 - Hosted validation installs no project dependencies, grants only read access
   to repository contents, and pins third-party actions by commit.
+- Android activity-result request codes are treated as provenance checks;
+  unrelated callbacks must not be parsed as PlacePicker venue data.
 
 ## Mobile Privacy Notes
 

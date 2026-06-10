@@ -134,6 +134,24 @@ if file?(main_activity)
     failures << "#{main_activity} must guard map updates until Mapbox is ready"
   end
 
+  unless source.match?(/private static final int PLACE_PICKER_REQUEST\s*=\s*\d+;/) &&
+         source.include?('startActivityForResult(intent, PLACE_PICKER_REQUEST);')
+    failures << "#{main_activity} must launch PlacePicker with a named request-code constant"
+  end
+
+  activity_result = java_method_source(source, 'protected void onActivityResult(')
+  if activity_result.nil?
+    failures << "#{main_activity} onActivityResult could not be validated"
+  else
+    unless activity_result.match?(/requestCode\s*!=\s*PLACE_PICKER_REQUEST\s*\|\|\s*resultCode\s*!=\s*PlacePicker\.PLACE_PICKED_RESULT_CODE/)
+      failures << "#{main_activity} must require matching PlacePicker request and result codes before reading result data"
+    end
+
+    unless activity_result.include?('super.onActivityResult(requestCode, resultCode, data);')
+      failures << "#{main_activity} must forward unrelated activity results to the superclass"
+    end
+  end
+
   unless source.include?('if (venue == null)') && source.include?('if (venue.getLocation() == null)')
     failures << "#{main_activity} must ignore current-place results without a Venue location"
   end

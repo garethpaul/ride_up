@@ -81,7 +81,8 @@ secrets.
   screenshot assets resolve inside the repository.
 - The static checker also verifies PlacePicker result handling guards null
   result data, missing venue and venue-location payloads, and map updates
-  before Mapbox is ready.
+  before Mapbox is ready. It also requires matching request and result codes
+  before the callback consumes picker data.
 - The static checker verifies startup current-place lookup only runs after
   location permission is already granted.
 - The static checker verifies the permission callback waits for every requested
@@ -138,6 +139,8 @@ When the required SDK or runtime is unavailable, use static checks and source re
   structural validation boundary.
 - See `docs/plans/2026-06-10-mapview-lifecycle-guard.md` for the MapView
   lifecycle forwarding guard.
+- See `docs/plans/2026-06-10-placepicker-request-code-guard.md` for the
+  PlacePicker activity-result routing guard.
 
 ## Contributing
 

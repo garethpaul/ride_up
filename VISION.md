@@ -26,6 +26,7 @@ Priority:
 - Keep Java resource references aligned with checked-in Android drawables
 - Keep landing-page local asset references aligned with checked-in files
 - Keep PlacePicker result handling guarded before reading venues or map state
+- Keep PlacePicker activity results scoped to the request that launched them
 - Keep startup current-place lookup behind granted location permission
 - Keep permission-result handling gated on every requested location grant
 - Keep unrelated permission-result callbacks forwarded to the superclass
