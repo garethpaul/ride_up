@@ -34,6 +34,9 @@ Helpful reports include:
 - Landing-page local asset references should resolve inside the repository;
   parent-directory escapes or missing local files should be treated as
   suspicious.
+- The Android modernization plan should be treated as security-sensitive
+  compatibility work because SDK, AndroidX, mapping, and permission behavior can
+  change together.
 - Dependency manifests detected: build.gradle, gradle.properties. Dependency updates should preserve lockfiles when present and avoid introducing packages without a clear maintenance reason.
 
 ## Mobile Privacy Notes

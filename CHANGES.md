@@ -1,5 +1,11 @@
 # Changes
 
+## 2026-06-10
+
+- Added an Android modernization plan that records the SDK 23 baseline and the
+  wrapper, SDK, AndroidX, and emulator smoke-test path for a dedicated revival
+  pass.
+
 ## 2026-06-09
 
 - Declared the launcher activity exported state explicitly and added static

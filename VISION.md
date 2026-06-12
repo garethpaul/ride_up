@@ -31,6 +31,8 @@ Priority:
 - Keep unrelated permission-result callbacks forwarded to the superclass
 - Keep PlacePicker and current-place coordinates guarded behind venue locations
 - Treat support libraries and Gradle versions as legacy
+- Keep the Android modernization plan visible until the SDK 23 baseline is
+  replaced in a dedicated compatibility pass
 
 Next priorities:
 
@@ -38,6 +40,8 @@ Next priorities:
 - Add a safe placeholder or mock mode for ride markers
 - Document which landing-page assets are part of the sample
 - Modernize dependencies in a separate compatibility pass
+- Execute the Android modernization plan with wrapper, SDK, AndroidX, and
+  emulator smoke-test coverage
 
 Contribution rules:
 

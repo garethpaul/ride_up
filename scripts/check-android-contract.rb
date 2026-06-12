@@ -8,6 +8,7 @@ DOCS_PLANS = ROOT.join('docs/plans')
 CANONICAL_PLAN = DOCS_PLANS.join('2026-06-08-ride-up-baseline.md')
 IDE_METADATA_PLAN = DOCS_PLANS.join('2026-06-09-ide-metadata-ignore.md')
 LAUNCHER_EXPORT_PLAN = DOCS_PLANS.join('2026-06-09-launcher-export-contract.md')
+MODERNIZATION_PLAN = DOCS_PLANS.join('2026-06-10-android-modernization-plan.md')
 failures = []
 
 def read(path)
@@ -61,6 +62,7 @@ end
 
 failures << "#{rel(IDE_METADATA_PLAN)} is missing" unless IDE_METADATA_PLAN.file?
 failures << "#{rel(LAUNCHER_EXPORT_PLAN)} is missing" unless LAUNCHER_EXPORT_PLAN.file?
+failures << "#{rel(MODERNIZATION_PLAN)} is missing" unless MODERNIZATION_PLAN.file?
 
 docs_plans = Dir.glob(DOCS_PLANS.join('*.md')).sort
 if docs_plans.empty?
@@ -214,6 +216,10 @@ if file?(app_build_gradle)
   app_gradle_source = read(app_build_gradle)
   application_id = app_gradle_source[/applicationId\s+"([^"]+)"/, 1]
   failures << "#{app_build_gradle} must declare applicationId" if application_id.nil? || application_id.empty?
+  unless app_gradle_source.include?('compileSdkVersion 23') &&
+         app_gradle_source.include?('targetSdkVersion 23')
+    failures << "#{app_build_gradle} must keep the current SDK 23 baseline visible until the modernization plan is executed"
+  end
 
   if manifest_package && application_id && application_id != manifest_package
     failures << "#{app_build_gradle} applicationId #{application_id} must match manifest package #{manifest_package}"
@@ -262,6 +268,23 @@ if Dir.exist?(ROOT.join(drawable_root))
   end
 else
   failures << "#{drawable_root} is missing"
+end
+
+readme = read('README.md')
+vision = read('VISION.md')
+security = read('SECURITY.md')
+changes = read('CHANGES.md')
+unless [readme, vision, security, changes].all? { |text| text.include?('Android modernization plan') }
+  failures << 'docs must mention the Android modernization plan'
+end
+
+modernization_plan = MODERNIZATION_PLAN.file? ? MODERNIZATION_PLAN.read : ''
+unless modernization_plan.include?('Status: Completed') &&
+       modernization_plan.include?('make check') &&
+       modernization_plan.include?('compileSdkVersion 23') &&
+       modernization_plan.include?('targetSdkVersion 23') &&
+       modernization_plan.include?('AndroidX')
+  failures << "#{rel(MODERNIZATION_PLAN)} must record the SDK 23 baseline, AndroidX migration path, and make check verification"
 end
 
 if failures.empty?

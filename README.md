@@ -72,6 +72,9 @@ secrets.
   check.
   Set `RUN_LEGACY_GRADLE=1` to also run the legacy Gradle wrapper on a machine
   with SDK 23 and the required archived Android Gradle plugin dependencies.
+- The Android modernization plan records the current `compileSdkVersion 23` and
+  `targetSdkVersion 23` baseline plus the wrapper, SDK, AndroidX, and emulator
+  smoke-test sequence needed for a future revival pass.
 - The static checker also requires completed canonical plans under `docs/plans`.
 - The Android manifest disables app backup so local credentials and
   location-adjacent state are not included in device backups.
@@ -134,6 +137,8 @@ When the required SDK or runtime is unavailable, use static checks and source re
   ignore coverage.
 - See `docs/plans/2026-06-09-launcher-export-contract.md` for the launcher
   activity exported-state contract.
+- See `docs/plans/2026-06-10-android-modernization-plan.md` for the Android
+  modernization plan.
 
 ## Contributing
 
