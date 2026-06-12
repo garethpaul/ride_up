@@ -5,6 +5,14 @@
 - Added an Android modernization plan that records the SDK 23 baseline and the
   wrapper, SDK, AndroidX, and emulator smoke-test path for a dedicated revival
   pass.
+- Required matching PlacePicker request and result codes before consuming
+  venue data, with superclass forwarding for unrelated activity results.
+- Guarded MapView lifecycle forwarding when the map view has not been
+  initialized.
+- Replaced the obsolete Travis Android configuration with dependency-free
+  GitHub Actions contract validation.
+- Made `make check` independent of the caller's current directory.
+- Added fail-closed workflow pinning and hosted validation plan checks.
 
 ## 2026-06-09
 

@@ -63,6 +63,7 @@ public class MainActivity extends AppCompatActivity {
     private float lng;
     private LocationServices locationServices;
     private static final int PERMISSIONS_LOCATION = 0;
+    private static final int PLACE_PICKER_REQUEST = 9001;
 
 
     @Override
@@ -142,7 +143,7 @@ public class MainActivity extends AppCompatActivity {
         Intent intent = new Intent(this, PlacePicker.class);
         String TAG = PlacePicker.class.getSimpleName();
         intent.putExtra(TAG + ".EXTRA_HEADER_BACKGROUND_RESOURCE", R.color.colorPrimary);
-        startActivityForResult(intent, 9001);
+        startActivityForResult(intent, PLACE_PICKER_REQUEST);
     }
 
     private void getClosestPlace() {
@@ -190,62 +191,72 @@ public class MainActivity extends AppCompatActivity {
 
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-        if (resultCode == PlacePicker.PLACE_PICKED_RESULT_CODE) {
-            if (data == null) {
-                return;
-            }
-
-            Venue place = data.getParcelableExtra(PlacePicker.EXTRA_PLACE);
-            if (place == null) {
-                return;
-            }
-
-            if (place.getLocation() == null) {
-                return;
-            }
-
-            pickupLocation.setText(place.getName());
-            if (mapboxMap != null) {
-                mapboxMap.clear();
-                mapboxMap.addMarker(new MarkerViewOptions()
-                        .position(new LatLng(place.getLocation().getLat(), place.getLocation().getLng()))
-                        .title("Pick Up Location"));
-            }
-
-        } else {
+        if (requestCode != PLACE_PICKER_REQUEST || resultCode != PlacePicker.PLACE_PICKED_RESULT_CODE) {
             super.onActivityResult(requestCode, resultCode, data);
+            return;
+        }
+
+        if (data == null) {
+            return;
+        }
+
+        Venue place = data.getParcelableExtra(PlacePicker.EXTRA_PLACE);
+        if (place == null) {
+            return;
+        }
+
+        if (place.getLocation() == null) {
+            return;
+        }
+
+        pickupLocation.setText(place.getName());
+        if (mapboxMap != null) {
+            mapboxMap.clear();
+            mapboxMap.addMarker(new MarkerViewOptions()
+                    .position(new LatLng(place.getLocation().getLat(), place.getLocation().getLng()))
+                    .title("Pick Up Location"));
         }
     }
 
 
     @Override
     protected void onDestroy() {
-        mapView.onDestroy();
+        if (mapView != null) {
+            mapView.onDestroy();
+        }
         super.onDestroy();
     }
 
     @Override
     protected void onResume() {
         super.onResume();
-        mapView.onResume();
+        if (mapView != null) {
+            mapView.onResume();
+        }
     }
 
     @Override
     protected void onPause() {
         super.onPause();
-        mapView.onPause();
+        if (mapView != null) {
+            mapView.onPause();
+        }
     }
 
     @Override
     protected void onSaveInstanceState(Bundle outState) {
         super.onSaveInstanceState(outState);
-        mapView.onSaveInstanceState(outState);
+        if (mapView != null) {
+            mapView.onSaveInstanceState(outState);
+        }
     }
 
     @Override
     public void onLowMemory() {
         super.onLowMemory();
-        mapView.onLowMemory();
+        if (mapView != null) {
+            mapView.onLowMemory();
+        }
     }
 
 

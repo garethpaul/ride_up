@@ -2,6 +2,7 @@
 # frozen_string_literal: true
 
 require 'pathname'
+require 'open3'
 
 ROOT = Pathname.new(__dir__).parent.expand_path
 DOCS_PLANS = ROOT.join('docs/plans')
@@ -9,6 +10,8 @@ CANONICAL_PLAN = DOCS_PLANS.join('2026-06-08-ride-up-baseline.md')
 IDE_METADATA_PLAN = DOCS_PLANS.join('2026-06-09-ide-metadata-ignore.md')
 LAUNCHER_EXPORT_PLAN = DOCS_PLANS.join('2026-06-09-launcher-export-contract.md')
 MODERNIZATION_PLAN = DOCS_PLANS.join('2026-06-10-android-modernization-plan.md')
+HOSTED_VALIDATION_PLAN = DOCS_PLANS.join('2026-06-10-hosted-contract-validation.md')
+HOSTED_VALIDATION_WORKFLOW = ROOT.join('.github/workflows/check.yml')
 failures = []
 
 def read(path)
@@ -63,6 +66,32 @@ end
 failures << "#{rel(IDE_METADATA_PLAN)} is missing" unless IDE_METADATA_PLAN.file?
 failures << "#{rel(LAUNCHER_EXPORT_PLAN)} is missing" unless LAUNCHER_EXPORT_PLAN.file?
 failures << "#{rel(MODERNIZATION_PLAN)} is missing" unless MODERNIZATION_PLAN.file?
+failures << "#{rel(HOSTED_VALIDATION_PLAN)} is missing" unless HOSTED_VALIDATION_PLAN.file?
+
+if ROOT.join('.travis.yml').exist?
+  failures << '.travis.yml is obsolete and must not replace the hosted contract workflow'
+end
+
+if HOSTED_VALIDATION_WORKFLOW.file?
+  workflow = HOSTED_VALIDATION_WORKFLOW.read
+  [
+    'runs-on: ubuntu-24.04',
+    'permissions:',
+    'contents: read',
+    'uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10',
+    'run: make check'
+  ].each do |fragment|
+    failures << "#{rel(HOSTED_VALIDATION_WORKFLOW)} must include #{fragment.inspect}" unless workflow.include?(fragment)
+  end
+
+  workflow.scan(/^\s*uses:\s*([^@\s]+)@([^\s#]+)/).each do |action, revision|
+    unless revision.match?(/\A[a-f0-9]{40}\z/)
+      failures << "#{rel(HOSTED_VALIDATION_WORKFLOW)} action #{action} must be pinned to a full commit SHA"
+    end
+  end
+else
+  failures << "#{rel(HOSTED_VALIDATION_WORKFLOW)} is missing"
+end
 
 docs_plans = Dir.glob(DOCS_PLANS.join('*.md')).sort
 if docs_plans.empty?
@@ -105,6 +134,24 @@ if file?(main_activity)
 
   unless source.include?('if (mapboxMap != null)')
     failures << "#{main_activity} must guard map updates until Mapbox is ready"
+  end
+
+  unless source.match?(/private static final int PLACE_PICKER_REQUEST\s*=\s*\d+;/) &&
+         source.include?('startActivityForResult(intent, PLACE_PICKER_REQUEST);')
+    failures << "#{main_activity} must launch PlacePicker with a named request-code constant"
+  end
+
+  activity_result = java_method_source(source, 'protected void onActivityResult(')
+  if activity_result.nil?
+    failures << "#{main_activity} onActivityResult could not be validated"
+  else
+    unless activity_result.match?(/requestCode\s*!=\s*PLACE_PICKER_REQUEST\s*\|\|\s*resultCode\s*!=\s*PlacePicker\.PLACE_PICKED_RESULT_CODE/)
+      failures << "#{main_activity} must require matching PlacePicker request and result codes before reading result data"
+    end
+
+    unless activity_result.include?('super.onActivityResult(requestCode, resultCode, data);')
+      failures << "#{main_activity} must forward unrelated activity results to the superclass"
+    end
   end
 
   unless source.include?('if (venue == null)') && source.include?('if (venue.getLocation() == null)')
@@ -151,6 +198,24 @@ if file?(main_activity)
          source.include?('result != PackageManager.PERMISSION_GRANTED')
     failures << "#{main_activity} must define allLocationPermissionsGranted(int[]) with empty-result and per-result denial checks"
   end
+
+  {
+    'protected void onDestroy()' => 'mapView.onDestroy();',
+    'protected void onResume()' => 'mapView.onResume();',
+    'protected void onPause()' => 'mapView.onPause();',
+    'protected void onSaveInstanceState(Bundle outState)' => 'mapView.onSaveInstanceState(outState);',
+    'public void onLowMemory()' => 'mapView.onLowMemory();'
+  }.each do |signature, map_view_call|
+    lifecycle_section = java_method_source(source, signature)
+    if lifecycle_section.nil?
+      failures << "#{main_activity} #{signature} could not be validated"
+      next
+    end
+
+    unless lifecycle_section.include?('if (mapView != null)') && lifecycle_section.include?(map_view_call)
+      failures << "#{main_activity} #{signature} must guard #{map_view_call} behind a non-null mapView check"
+    end
+  end
 else
   failures << "#{main_activity} is missing"
 end
@@ -179,9 +244,16 @@ else
   failures << "#{gitignore} is missing"
 end
 
-tracked_ide_metadata = `git ls-files .idea '*.iml'`.split("\n").select { |path| ROOT.join(path).file? }
-unless tracked_ide_metadata.empty?
-  failures << "IDE metadata must not be tracked: #{tracked_ide_metadata.join(', ')}"
+tracked_output, tracked_error, tracked_status = Open3.capture3(
+  'git', '-C', ROOT.to_s, 'ls-files', '.idea', '*.iml'
+)
+if tracked_status.success?
+  tracked_ide_metadata = tracked_output.split("\n").select { |path| ROOT.join(path).file? }
+  unless tracked_ide_metadata.empty?
+    failures << "IDE metadata must not be tracked: #{tracked_ide_metadata.join(', ')}"
+  end
+else
+  failures << "git metadata inspection failed: #{tracked_error.strip}"
 end
 
 if file?(build_gradle)

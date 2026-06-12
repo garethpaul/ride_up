@@ -75,6 +75,9 @@ secrets.
 - The Android modernization plan records the current `compileSdkVersion 23` and
   `targetSdkVersion 23` baseline plus the wrapper, SDK, AndroidX, and emulator
   smoke-test sequence needed for a future revival pass.
+- GitHub Actions runs the dependency-free static contract on Ubuntu 24.04. It
+  intentionally does not present the obsolete SDK 23 stack as a supported
+  hosted Android build.
 - The static checker also requires completed canonical plans under `docs/plans`.
 - The Android manifest disables app backup so local credentials and
   location-adjacent state are not included in device backups.
@@ -86,7 +89,8 @@ secrets.
   screenshot assets resolve inside the repository.
 - The static checker also verifies PlacePicker result handling guards null
   result data, missing venue and venue-location payloads, and map updates
-  before Mapbox is ready.
+  before Mapbox is ready. It also requires matching request and result codes
+  before the callback consumes picker data.
 - The static checker verifies startup current-place lookup only runs after
   location permission is already granted.
 - The static checker verifies the permission callback waits for every requested
@@ -95,6 +99,8 @@ secrets.
   to the superclass instead of being swallowed.
 - The static checker verifies current-place callbacks ignore missing venue or
   venue-location payloads before reading coordinates.
+- The static checker verifies MapView lifecycle callbacks guard missing map
+  instances before forwarding lifecycle events.
 - The static checker verifies local IDE metadata stays ignored and untracked.
 
 When the required SDK or runtime is unavailable, use static checks and source review first, then verify on a machine that has the matching platform toolchain.
@@ -139,6 +145,12 @@ When the required SDK or runtime is unavailable, use static checks and source re
   activity exported-state contract.
 - See `docs/plans/2026-06-10-android-modernization-plan.md` for the Android
   modernization plan.
+- See `docs/plans/2026-06-10-hosted-contract-validation.md` for the hosted
+  structural validation boundary.
+- See `docs/plans/2026-06-10-mapview-lifecycle-guard.md` for the MapView
+  lifecycle forwarding guard.
+- See `docs/plans/2026-06-10-placepicker-request-code-guard.md` for the
+  PlacePicker activity-result routing guard.
 
 ## Contributing
 
