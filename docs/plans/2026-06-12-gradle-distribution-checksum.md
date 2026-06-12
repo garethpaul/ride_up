@@ -69,5 +69,9 @@ integrity gap without forcing an unrelated legacy Android toolchain upgrade.
 - Six focused hostile wrapper mutations were rejected for missing, duplicated,
   and changed distribution URL and checksum properties.
 - Ruby syntax validation and `git diff --check` passed.
-- Hosted verification for the implementation head is pending and will be
-  replaced with exact run identifiers before delivery is considered final.
+- Implementation head `1f7ab6c5d88be67737b65170e449447f9facaf93`
+  passed push Check run `27436088453`, pull-request Check run `27436089863`,
+  and CodeQL run `27436088207` for Actions, Java/Kotlin,
+  JavaScript/TypeScript, and Ruby.
+- Pull request #2 was open, clean, and mergeable at that implementation head
+  with all seven hosted checks successful.

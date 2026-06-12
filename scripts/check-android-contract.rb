@@ -626,7 +626,11 @@ unless gradle_checksum_plan.include?('Status: Completed') &&
        gradle_checksum_plan.include?('distributionSha256Sum') &&
        gradle_checksum_plan.include?('ruby scripts/check-android-contract.rb') &&
        gradle_checksum_plan.include?('make check') &&
-       gradle_checksum_plan.include?('hostile wrapper mutations')
+       gradle_checksum_plan.include?('hostile wrapper mutations') &&
+       gradle_checksum_plan.include?('27436088453') &&
+       gradle_checksum_plan.include?('27436089863') &&
+       gradle_checksum_plan.include?('27436088207') &&
+       !gradle_checksum_plan.match?(/pending/i)
   failures << "#{rel(GRADLE_CHECKSUM_PLAN)} must record completed status and actual wrapper-checksum verification"
 end
 
