@@ -2,6 +2,9 @@
 
 ## 2026-06-12
 
+- Restored local and hosted Android compilation with AGP 3.3.2, Gradle 4.10.2,
+  build-tools 28.0.3, scoped legacy lint handling, and temporary non-secret
+  credential placeholders that are removed after every Gradle invocation.
 - Added executable Java guard behavior tests for PlacePicker request routing
   and complete location permission grants without requiring an Android SDK.
 - Pinned hosted Corretto setup, disabled persisted checkout credentials, and

@@ -75,16 +75,23 @@ secrets.
 - `make check` runs the static Android credential, manifest, launcher export,
   application ID, landing-page package-link, and local landing asset contract
   check.
-  Set `RUN_LEGACY_GRADLE=1` to also run the legacy Gradle wrapper on a machine
-  with SDK 23 and the required archived Android Gradle plugin dependencies.
+  With an Android SDK configured, the same command also runs Gradle lint, both
+  unit-test variants, and debug assembly. A temporary non-secret
+  `Constants.java` is generated from the checked-in example only when local
+  credentials are absent and is removed on every exit.
 - The Android modernization plan records the current `compileSdkVersion 23` and
   `targetSdkVersion 23` baseline plus the wrapper, SDK, AndroidX, and emulator
   smoke-test sequence needed for a future revival pass.
-- GitHub Actions runs dependency-free source and guard behavior contracts on
-  Ubuntu 24.04. It
-  pins Corretto 17 for the pure Java guard behavior harness and intentionally
-  does not present the obsolete SDK 23 stack as a supported hosted Android build.
-- The static checker also requires completed canonical plans under `docs/plans`.
+- GitHub Actions installs Android API 23 and build-tools 28.0.3, selects
+  Corretto 8, and runs the complete `make check` gate on Ubuntu 24.04.
+- The compatibility bridge uses Android Gradle Plugin 3.3.2 and Gradle 4.10.2
+  while preserving compile/target SDK 23 and all application dependency
+  versions.
+- `app/lint.xml` suppresses only the old lint engine's Gson module-descriptor
+  failure and the separately tracked target-SDK expiration. Other findings
+  remain visible in the lint report.
+- The static checker requires completed canonical plans and truthful status for
+  the active hosted-build plan under `docs/plans`.
 - The Android manifest disables app backup so local credentials and
   location-adjacent state are not included in device backups.
 - The static checker verifies the launcher activity explicitly declares its

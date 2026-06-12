@@ -1,6 +1,6 @@
 # Hosted Android Build
 
-## Status: Planned
+## Status: Implementation Complete; Hosted Verification Pending
 
 ## Context
 
@@ -13,9 +13,11 @@ Disposable-clone probes established a viable compatibility floor:
 
 - AGP 3.0.1 with Gradle 4.1 resolves dependencies and compiles source/tests,
   but desugaring cannot read Gson 2.8.9's Java 9 module descriptor.
-- AGP 3.2.1 with Gradle 4.6 and build-tools 28.0.3 compiles the app and executes
-  both unit-test variants while preserving compile/target SDK 23.
-- AGP 3.2.1 lint requires narrow `LintError` handling for Gson's module
+- AGP 3.2.1 with Gradle 4.6 compiles and tests the app, but debug dexing still
+  crashes on Gson 2.8.9's Java 9 module descriptor.
+- AGP 3.3.2 with Gradle 4.10.2 and build-tools 28.0.3 completes debug assembly
+  and both unit-test variants while preserving compile/target SDK 23.
+- AGP 3.3.2 lint requires narrow `LintError` handling for Gson's module
   descriptor and `ExpiredTargetSdkVersion` handling until the separate AndroidX
   and target-SDK modernization plan is executed.
 - Compilation requires the ignored local `Constants.java`; the checked-in
@@ -28,7 +30,7 @@ downgrading security overrides, or changing RideUp runtime behavior.
 
 ## Changes
 
-- Upgrade only the build bridge to AGP 3.2.1, Gradle 4.6, and build-tools
+- Upgrade only the build bridge to AGP 3.3.2, Gradle 4.10.2, and build-tools
   28.0.3 while keeping compile/target SDK 23 and Java 8.
 - Replace obsolete dependency configurations with `implementation` and
   `testImplementation` without changing resolved versions.
@@ -48,6 +50,21 @@ downgrading security overrides, or changing RideUp runtime behavior.
 - Reject focused toolchain, credential-fixture, lint, workflow, documentation,
   and plan-evidence mutations.
 - Pass exact-head hosted verification before completion.
+
+## Verification Evidence
+
+- SDK-free `make check` passed, including the Android contracts and executable
+  pure-Java guard behavior tests.
+- SDK-backed `make check` passed with Android API 23 and build-tools 28.0.3,
+  including lint, debug and release unit-test variants, dexing, and debug APK
+  assembly.
+- The complete SDK-backed gate passed from a fresh external clone with the
+  staged patch applied.
+- The credential runner removed its generated placeholder after successful and
+  failed Gradle commands and preserved a pre-existing local credential file.
+- All 28 focused toolchain, dependency, workflow, runner, lint, ownership,
+  documentation, and plan mutations were rejected.
+- Exact-head hosted verification remains pending.
 
 ## Boundaries
 

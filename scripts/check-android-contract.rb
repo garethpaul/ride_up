@@ -13,7 +13,12 @@ MODERNIZATION_PLAN = DOCS_PLANS.join('2026-06-10-android-modernization-plan.md')
 HOSTED_VALIDATION_PLAN = DOCS_PLANS.join('2026-06-10-hosted-contract-validation.md')
 GUARD_TEST_PLAN = DOCS_PLANS.join('2026-06-12-pure-java-guard-tests.md')
 DEPENDENCY_REVIEW_PLAN = DOCS_PLANS.join('2026-06-12-dependency-security-review.md')
+HOSTED_BUILD_PLAN = DOCS_PLANS.join('2026-06-12-hosted-android-build.md')
 HOSTED_VALIDATION_WORKFLOW = ROOT.join('.github/workflows/check.yml')
+CODEOWNERS = ROOT.join('.github/CODEOWNERS')
+GRADLE_RUNNER = ROOT.join('scripts/run-android-gradle.sh')
+LINT_CONFIG = ROOT.join('app/lint.xml')
+WRAPPER_PROPERTIES = ROOT.join('gradle/wrapper/gradle-wrapper.properties')
 failures = []
 
 def read(path)
@@ -71,62 +76,55 @@ failures << "#{rel(MODERNIZATION_PLAN)} is missing" unless MODERNIZATION_PLAN.fi
 failures << "#{rel(HOSTED_VALIDATION_PLAN)} is missing" unless HOSTED_VALIDATION_PLAN.file?
 failures << "#{rel(GUARD_TEST_PLAN)} is missing" unless GUARD_TEST_PLAN.file?
 failures << "#{rel(DEPENDENCY_REVIEW_PLAN)} is missing" unless DEPENDENCY_REVIEW_PLAN.file?
+failures << "#{rel(HOSTED_BUILD_PLAN)} is missing" unless HOSTED_BUILD_PLAN.file?
 
 if ROOT.join('.travis.yml').exist?
   failures << '.travis.yml is obsolete and must not replace the hosted contract workflow'
 end
 
 if HOSTED_VALIDATION_WORKFLOW.file?
-  workflow = HOSTED_VALIDATION_WORKFLOW.read
-  [
-    'runs-on: ubuntu-24.04',
-    'timeout-minutes: 5',
-    'cancel-in-progress: true',
-    'permissions:',
-    'contents: read',
-    'uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10',
-    'persist-credentials: false',
-    'uses: actions/setup-java@be666c2fcd27ec809703dec50e508c2fdc7f6654',
-    'distribution: corretto',
-    "java-version: '17'",
-    'run: make check'
-  ].each do |fragment|
-    failures << "#{rel(HOSTED_VALIDATION_WORKFLOW)} must include #{fragment.inspect}" unless workflow.include?(fragment)
-  end
+  expected_workflow = <<~'YAML'
+    name: Check
 
-  actions = workflow.scan(/^\s*(?:-\s*)?uses:\s*([^@\s]+)@([^\s#]+)/)
-  expected_actions = [
-    ['actions/checkout', 'df4cb1c069e1874edd31b4311f1884172cec0e10'],
-    ['actions/setup-java', 'be666c2fcd27ec809703dec50e508c2fdc7f6654']
-  ]
-  failures << "#{rel(HOSTED_VALIDATION_WORKFLOW)} must use only approved actions" unless actions == expected_actions
+    on:
+      push:
+      pull_request:
+      workflow_dispatch:
 
-  unless workflow.scan(/^permissions:$/).length == 1 &&
-         !workflow.match?(/^\s+[A-Za-z0-9_-]+:\s*write\s*$/)
-    failures << "#{rel(HOSTED_VALIDATION_WORKFLOW)} must keep exactly one read-only permissions block"
-  end
+    permissions:
+      contents: read
 
-  unless workflow.scan(/persist-credentials:\s*false/).length == 1
-    failures << "#{rel(HOSTED_VALIDATION_WORKFLOW)} must disable persisted checkout credentials exactly once"
-  end
+    env:
+      FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
 
-  %w[push: pull_request: workflow_dispatch:].each do |trigger|
-    failures << "#{rel(HOSTED_VALIDATION_WORKFLOW)} must include #{trigger}" unless workflow.match?(/^  #{Regexp.escape(trigger)}$/)
-  end
+    concurrency:
+      group: check-${{ github.workflow }}-${{ github.ref }}
+      cancel-in-progress: true
 
-  if workflow.include?('pull_request_target:')
-    failures << "#{rel(HOSTED_VALIDATION_WORKFLOW)} must not run untrusted pull requests with target-branch privileges"
-  end
+    jobs:
+      check:
+        runs-on: ubuntu-24.04
+        timeout-minutes: 15
+        steps:
+          - name: Check out repository
+            uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
+            with:
+              persist-credentials: false
 
-  actions.each do |action, revision|
-    unless revision.match?(/\A[a-f0-9]{40}\z/)
-      failures << "#{rel(HOSTED_VALIDATION_WORKFLOW)} action #{action} must be pinned to a full commit SHA"
-    end
-  end
+          - name: Set up Java
+            uses: actions/setup-java@be666c2fcd27ec809703dec50e508c2fdc7f6654 # v5.2.0
+            with:
+              distribution: corretto
+              java-version: '8'
 
-  if workflow.match?(/\b(?:gradle|npm|bundle|gem)\s+(?:install|build|test)\b/) ||
-     workflow.match?(/\.\/gradlew\s+(?:build|test|assemble)/)
-    failures << "#{rel(HOSTED_VALIDATION_WORKFLOW)} must keep hosted validation dependency-free"
+          - name: Install Android SDK packages
+            run: '"${ANDROID_HOME}/cmdline-tools/latest/bin/sdkmanager" "platform-tools" "platforms;android-23" "build-tools;28.0.3"'
+
+          - name: Run full verification
+            run: make check
+  YAML
+  unless HOSTED_VALIDATION_WORKFLOW.read == expected_workflow
+    failures << "#{rel(HOSTED_VALIDATION_WORKFLOW)} must match the exact complete Android verification workflow"
   end
 else
   failures << "#{rel(HOSTED_VALIDATION_WORKFLOW)} is missing"
@@ -139,8 +137,30 @@ end
 
 docs_plans.each do |plan_path|
   plan = File.read(plan_path)
+  next if Pathname.new(plan_path) == HOSTED_BUILD_PLAN
+
   unless plan.include?('Status: Completed') && plan.include?('make check')
     failures << "#{rel(plan_path)} must record completed status and make check verification"
+  end
+end
+
+if HOSTED_BUILD_PLAN.file?
+  hosted_build_plan = HOSTED_BUILD_PLAN.read
+  unless hosted_build_plan.include?('## Status: Implementation Complete; Hosted Verification Pending')
+    failures << "#{rel(HOSTED_BUILD_PLAN)} must truthfully record pending hosted verification"
+  end
+  [
+    'AGP 3.3.2 with Gradle 4.10.2 and build-tools 28.0.3',
+    'Run SDK-backed Gradle tests, lint, and debug assembly locally.',
+    'Repeat the complete gate from a fresh external clone.',
+    'SDK-backed `make check` passed with Android API 23 and build-tools 28.0.3',
+    'All 28 focused toolchain, dependency, workflow, runner, lint, ownership,',
+    'Exact-head hosted verification remains pending.',
+    'Pass exact-head hosted verification before completion.'
+  ].each do |evidence|
+    unless hosted_build_plan.include?(evidence)
+      failures << "#{rel(HOSTED_BUILD_PLAN)} must record #{evidence.inspect}"
+    end
   end
 end
 
@@ -327,11 +347,19 @@ else
 end
 
 if file?(build_gradle)
-  read(build_gradle).scan(/maven\s*\{\s*url\s+["'](http:\/\/[^"']+)["']/).flatten.each do |url|
+  root_gradle_source = read(build_gradle)
+  root_gradle_source.scan(/maven\s*\{\s*url\s+["'](http:\/\/[^"']+)["']/).flatten.each do |url|
     failures << "#{build_gradle} uses insecure repository URL #{url}"
+  end
+  unless root_gradle_source.include?("classpath 'com.android.tools.build:gradle:3.3.2'")
+    failures << "#{build_gradle} must use the published AGP 3.3.2 compatibility bridge"
   end
 else
   failures << "#{build_gradle} is missing"
+end
+
+unless WRAPPER_PROPERTIES.file? && WRAPPER_PROPERTIES.read.include?('gradle-4.10.2-all.zip')
+  failures << "#{rel(WRAPPER_PROPERTIES)} must use the AGP-compatible Gradle 4.10.2 distribution"
 end
 
 manifest_package = nil
@@ -359,14 +387,18 @@ if file?(app_build_gradle)
   application_id = app_gradle_source[/applicationId\s+"([^"]+)"/, 1]
   failures << "#{app_build_gradle} must declare applicationId" if application_id.nil? || application_id.empty?
   unless app_gradle_source.include?('compileSdkVersion 23') &&
-         app_gradle_source.include?('targetSdkVersion 23')
+         app_gradle_source.include?('targetSdkVersion 23') &&
+         app_gradle_source.include?('buildToolsVersion "28.0.3"')
     failures << "#{app_build_gradle} must keep the current SDK 23 baseline visible until the modernization plan is executed"
   end
-  unless app_gradle_source.include?("testCompile 'junit:junit:4.13.2'")
+  unless app_gradle_source.include?("testImplementation 'junit:junit:4.13.2'")
     failures << "#{app_build_gradle} must use the maintained JUnit 4.13.2 test dependency"
   end
-  unless app_gradle_source.include?("compile 'com.google.code.gson:gson:2.8.9'")
+  unless app_gradle_source.include?("implementation 'com.google.code.gson:gson:2.8.9'")
     failures << "#{app_build_gradle} must override PlacePicker's vulnerable Gson 2.5 dependency"
+  end
+  if app_gradle_source.match?(/^\s*(?:compile|testCompile)\b/)
+    failures << "#{app_build_gradle} must not restore obsolete dependency configurations"
   end
 
   if manifest_package && application_id && application_id != manifest_package
@@ -379,6 +411,66 @@ end
 makefile = read('Makefile')
 unless makefile.include?('$(RUBY) "$(ROOT)/scripts/test-ride-up-guards.rb"')
   failures << 'Makefile test target must run the pure Java guard behavior harness from ROOT'
+end
+[
+  'ANDROID_SDK := $(if $(ANDROID_HOME),$(ANDROID_HOME),$(ANDROID_SDK_ROOT))',
+  "test:\n",
+  'scripts/run-android-gradle.sh lint',
+  'scripts/run-android-gradle.sh test',
+  'scripts/run-android-gradle.sh assembleDebug'
+].each do |fragment|
+  failures << "Makefile must include #{fragment.inspect}" unless makefile.include?(fragment)
+end
+
+if GRADLE_RUNNER.file?
+  runner = GRADLE_RUNNER.read
+  [
+    'CONSTANTS="$ROOT/app/src/main/java/com/foursquare/rideup/Constants.java"',
+    'EXAMPLE="$CONSTANTS.example"',
+    'trap cleanup 0',
+    "trap 'exit 129' HUP",
+    "trap 'exit 130' INT",
+    "trap 'exit 143' TERM",
+    'cp "$EXAMPLE" "$CONSTANTS"',
+    'rm -f "$CONSTANTS"',
+    './gradlew --no-daemon "$@"'
+  ].each do |fragment|
+    failures << "#{rel(GRADLE_RUNNER)} must include #{fragment.inspect}" unless runner.include?(fragment)
+  end
+  failures << "#{rel(GRADLE_RUNNER)} must be executable" unless GRADLE_RUNNER.executable?
+else
+  failures << "#{rel(GRADLE_RUNNER)} is missing"
+end
+
+if LINT_CONFIG.file?
+  lint = LINT_CONFIG.read
+  %w[LintError ExpiredTargetSdkVersion].each do |issue|
+    failures << "#{rel(LINT_CONFIG)} must document #{issue}" unless lint.include?(%Q(id="#{issue}"))
+  end
+  failures << "#{rel(LINT_CONFIG)} must keep exactly two scoped suppressions" unless lint.scan(/<issue\s+id=/).length == 2
+  unless lint.include?('regexp="Unexpected failure during lint analysis of module-info\\.class"')
+    failures << "#{rel(LINT_CONFIG)} must scope LintError to the known Gson module descriptor failure"
+  end
+  unless lint.include?('<issue id="ExpiredTargetSdkVersion" severity="ignore" />')
+    failures << "#{rel(LINT_CONFIG)} must scope the deferred target SDK finding by issue ID"
+  end
+else
+  failures << "#{rel(LINT_CONFIG)} is missing"
+end
+
+expected_codeowners = <<~OWNERS
+  /.github/CODEOWNERS @garethpaul
+  /.github/workflows/ @garethpaul
+  /Makefile @garethpaul
+  /scripts/ @garethpaul
+  /build.gradle @garethpaul
+  /app/build.gradle @garethpaul
+  /app/lint.xml @garethpaul
+  /gradle/wrapper/gradle-wrapper.properties @garethpaul
+  /app/src/main/ @garethpaul
+OWNERS
+unless CODEOWNERS.file? && CODEOWNERS.read == expected_codeowners
+  failures << "#{rel(CODEOWNERS)} must protect the hosted build, credential, and app boundaries"
 end
 
 if file?(landing_page)
@@ -433,6 +525,20 @@ end
 
 unless [readme, vision, security, changes].all? { |text| text.include?('guard behavior') }
   failures << 'docs must mention executable guard behavior validation'
+end
+
+[
+  'Android Gradle Plugin 3.3.2 and Gradle 4.10.2',
+  'Android API 23 and build-tools 28.0.3',
+  'temporary non-secret',
+  '`app/lint.xml` suppresses only'
+].each do |fragment|
+  failures << "README.md must document #{fragment.inspect}" unless readme.include?(fragment)
+end
+
+unless changes.include?('AGP 3.3.2, Gradle 4.10.2') &&
+       changes.include?('temporary non-secret')
+  failures << 'CHANGES.md must record the hosted Android build bridge'
 end
 
 modernization_plan = MODERNIZATION_PLAN.file? ? MODERNIZATION_PLAN.read : ''

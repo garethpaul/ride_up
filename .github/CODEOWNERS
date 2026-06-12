@@ -1,0 +1,9 @@
+/.github/CODEOWNERS @garethpaul
+/.github/workflows/ @garethpaul
+/Makefile @garethpaul
+/scripts/ @garethpaul
+/build.gradle @garethpaul
+/app/build.gradle @garethpaul
+/app/lint.xml @garethpaul
+/gradle/wrapper/gradle-wrapper.properties @garethpaul
+/app/src/main/ @garethpaul

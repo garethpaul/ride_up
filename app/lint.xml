@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<lint>
+    <!-- AGP 3.3 lint cannot analyze Gson 2.8.9's Java 9 module descriptor. -->
+    <issue id="LintError">
+        <ignore regexp="Unexpected failure during lint analysis of module-info\.class" />
+    </issue>
+    <!-- Target SDK 23 modernization is tracked separately from this build bridge. -->
+    <issue id="ExpiredTargetSdkVersion" severity="ignore" />
+</lint>
