@@ -42,6 +42,8 @@ Helpful reports include:
   to repository contents, and pins third-party actions by commit.
 - Android activity-result request codes are treated as provenance checks;
   unrelated callbacks must not be parsed as PlacePicker venue data.
+- Hosted guard behavior validation executes permission and request-code
+  decisions without loading project dependencies or local credentials.
 
 ## Mobile Privacy Notes
 
@@ -50,6 +52,13 @@ If this project requests device permissions such as location, camera, microphone
 ## Dependency and Supply Chain Security
 
 Dependency updates should come from trusted package managers and should keep lockfiles in sync when lockfiles exist. Do not commit credentials, private keys, tokens, generated secrets, or machine-local configuration. If a vulnerability depends on a compromised package, typosquatting risk, insecure transitive dependency, or unsafe build step, include the package name, affected version, and the path through which it is used.
+
+- Gson 2.8.9 overrides PlacePicker's Gson 2.5 dependency to address
+  CVE-2022-25647.
+- Mapbox 4.2.0-beta.5 and the app still resolve affected OkHttp 3.x
+  (CVE-2021-0341). The fixed OkHttp line requires the dedicated Android SDK and
+  Mapbox compatibility upgrade before this sample can be treated as production
+  network software.
 
 ## Safe Research Guidelines
 

@@ -12,7 +12,7 @@
 
 `garethpaul/ride_up` is an Android application or sample. A ride sharing clone.
 
-This README is based on the checked-in source, manifests, scripts, and repository metadata on the `master` branch. The project language mix found during review was: Java (3), JavaScript (1).
+This README is based on the checked-in source, manifests, scripts, and repository metadata. The Android application and its tests are Java; the legacy landing page also contains JavaScript.
 
 ## Repository Contents
 
@@ -36,7 +36,9 @@ Additional scan context:
 - Source directories: app, gradle, javascripts, stylesheets
 - Dependency and build manifests: build.gradle, gradlew
 - Entry points or build surfaces: Gradle build files
-- Test-looking files: app/src/androidTest/java/com/foursquare/rideup/ExampleInstrumentedTest.java, app/src/test/java/com/foursquare/rideup/ExampleUnitTest.java
+- Test files: `app/src/test/java/com/foursquare/rideup/RideUpGuardsTest.java`,
+  `app/src/androidTest/java/com/foursquare/rideup/ExampleInstrumentedTest.java`,
+  and the dependency-free harness under `scripts/java`
 
 ## Getting Started
 
@@ -45,6 +47,7 @@ Additional scan context:
 - Git
 - Android Studio or a compatible Android SDK
 - Gradle or the checked-in Gradle wrapper when present
+- Ruby and a JDK with `javac`/`java` for dependency-free contract and guard tests
 
 ### Setup
 
@@ -67,6 +70,8 @@ secrets.
 ## Testing and Verification
 
 - `./gradlew test` or Android Studio's test runner when the SDK is configured
+- `make test` runs both the static contracts and executable Java guard behavior
+  tests without requiring an Android SDK.
 - `make check` runs the static Android credential, manifest, launcher export,
   application ID, landing-page package-link, and local landing asset contract
   check.
@@ -75,9 +80,10 @@ secrets.
 - The Android modernization plan records the current `compileSdkVersion 23` and
   `targetSdkVersion 23` baseline plus the wrapper, SDK, AndroidX, and emulator
   smoke-test sequence needed for a future revival pass.
-- GitHub Actions runs the dependency-free static contract on Ubuntu 24.04. It
-  intentionally does not present the obsolete SDK 23 stack as a supported
-  hosted Android build.
+- GitHub Actions runs dependency-free source and guard behavior contracts on
+  Ubuntu 24.04. It
+  pins Corretto 17 for the pure Java guard behavior harness and intentionally
+  does not present the obsolete SDK 23 stack as a supported hosted Android build.
 - The static checker also requires completed canonical plans under `docs/plans`.
 - The Android manifest disables app backup so local credentials and
   location-adjacent state are not included in device backups.
@@ -101,6 +107,8 @@ secrets.
   venue-location payloads before reading coordinates.
 - The static checker verifies MapView lifecycle callbacks guard missing map
   instances before forwarding lifecycle events.
+- The guard behavior harness executes null, empty, partial, and complete
+  permission results plus matching and unrelated PlacePicker callback codes.
 - The static checker verifies local IDE metadata stays ignored and untracked.
 
 When the required SDK or runtime is unavailable, use static checks and source review first, then verify on a machine that has the matching platform toolchain.
@@ -119,6 +127,11 @@ When the required SDK or runtime is unavailable, use static checks and source re
 ## Maintenance Notes
 
 - This looks like a legacy Android project or sample. Expect Android SDK, Gradle, and support-library versions to matter.
+- PlacePicker's transitive Gson 2.5 is overridden with Gson 2.8.9 to address
+  CVE-2022-25647.
+- The Mapbox 4.2 beta dependency line still requires affected OkHttp 3.x
+  (CVE-2021-0341). Treat this sample as non-production until the dedicated SDK,
+  Mapbox, and OkHttp compatibility upgrade is built and tested on Android.
 - See `SECURITY.md` for vulnerability reporting and safe research guidance.
 - See `VISION.md` for project direction and contribution guardrails.
 - See `docs/plans/2026-06-08-ride-up-baseline.md` for the canonical Android
@@ -151,6 +164,10 @@ When the required SDK or runtime is unavailable, use static checks and source re
   lifecycle forwarding guard.
 - See `docs/plans/2026-06-10-placepicker-request-code-guard.md` for the
   PlacePicker activity-result routing guard.
+- See `docs/plans/2026-06-12-pure-java-guard-tests.md` for executable guard
+  behavior validation without an Android SDK.
+- See `docs/plans/2026-06-12-dependency-security-review.md` for the OSV and
+  Maven POM dependency review, applied Gson override, and remaining OkHttp risk.
 
 ## Contributing
 

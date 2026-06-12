@@ -36,6 +36,7 @@ Priority:
 - Keep the Android modernization plan visible until the SDK 23 baseline is
   replaced in a dedicated compatibility pass
 - Keep dependency-free Android source contracts enforced in hosted validation
+- Keep executable guard behavior validation independent of the legacy Android SDK
 
 Next priorities:
 
@@ -45,6 +46,8 @@ Next priorities:
 - Modernize dependencies in a separate compatibility pass
 - Execute the Android modernization plan with wrapper, SDK, AndroidX, and
   emulator smoke-test coverage
+- Upgrade Mapbox and OkHttp together to resolve CVE-2021-0341 without silently
+  breaking the Android compatibility floor
 
 Contribution rules:
 

@@ -27,12 +27,13 @@
 
 ## Coding conventions
 
-- Language mix noted in the README: Java (3), JavaScript (1).
+- The Android application and tests use Java; the legacy landing page also uses JavaScript.
 - Use the checked-in Gradle wrapper for Android builds when an SDK is configured.
 
 ## Testing guidance
 
 - Test-related files detected: `app/src/test/`
+- `make test` also compiles and executes the pure Java permission and activity-result guard behavior without an Android SDK.
 - Start with the narrowest relevant test or Make target, then run `make check` before handing off if the change is not documentation-only.
 - Keep README verification notes in sync when commands, fixtures, or supported toolchains change.
 

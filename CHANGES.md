@@ -1,5 +1,14 @@
 # Changes
 
+## 2026-06-12
+
+- Added executable Java guard behavior tests for PlacePicker request routing
+  and complete location permission grants without requiring an Android SDK.
+- Pinned hosted Corretto setup, disabled persisted checkout credentials, and
+  upgraded the future Gradle test dependency to JUnit 4.13.2.
+- Overrode PlacePicker's vulnerable Gson 2.5 dependency with Gson 2.8.9 and
+  recorded the unresolved legacy Mapbox/OkHttp CVE-2021-0341 risk.
+
 ## 2026-06-10
 
 - Added an Android modernization plan that records the SDK 23 baseline and the

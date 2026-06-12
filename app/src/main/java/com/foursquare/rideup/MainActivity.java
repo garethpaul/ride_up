@@ -191,7 +191,11 @@ public class MainActivity extends AppCompatActivity {
 
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-        if (requestCode != PLACE_PICKER_REQUEST || resultCode != PlacePicker.PLACE_PICKED_RESULT_CODE) {
+        if (!RideUpGuards.isExpectedActivityResult(
+                requestCode,
+                resultCode,
+                PLACE_PICKER_REQUEST,
+                PlacePicker.PLACE_PICKED_RESULT_CODE)) {
             super.onActivityResult(requestCode, resultCode, data);
             return;
         }
@@ -348,25 +352,12 @@ public class MainActivity extends AppCompatActivity {
         return radians2degrees * Math.atan2(a, b);
     }
 
-    private boolean allLocationPermissionsGranted(int[] grantResults) {
-        if (grantResults.length == 0) {
-            return false;
-        }
-
-        for (int result : grantResults) {
-            if (result != PackageManager.PERMISSION_GRANTED) {
-                return false;
-            }
-        }
-
-        return true;
-    }
-
     @Override
     public void onRequestPermissionsResult(
             int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
         if (requestCode == PERMISSIONS_LOCATION) {
-            if (allLocationPermissionsGranted(grantResults)) {
+            if (RideUpGuards.allPermissionsGranted(
+                    grantResults, PackageManager.PERMISSION_GRANTED)) {
                 getClosestPlace();
             }
         } else {

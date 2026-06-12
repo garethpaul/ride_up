@@ -11,6 +11,8 @@ IDE_METADATA_PLAN = DOCS_PLANS.join('2026-06-09-ide-metadata-ignore.md')
 LAUNCHER_EXPORT_PLAN = DOCS_PLANS.join('2026-06-09-launcher-export-contract.md')
 MODERNIZATION_PLAN = DOCS_PLANS.join('2026-06-10-android-modernization-plan.md')
 HOSTED_VALIDATION_PLAN = DOCS_PLANS.join('2026-06-10-hosted-contract-validation.md')
+GUARD_TEST_PLAN = DOCS_PLANS.join('2026-06-12-pure-java-guard-tests.md')
+DEPENDENCY_REVIEW_PLAN = DOCS_PLANS.join('2026-06-12-dependency-security-review.md')
 HOSTED_VALIDATION_WORKFLOW = ROOT.join('.github/workflows/check.yml')
 failures = []
 
@@ -67,6 +69,8 @@ failures << "#{rel(IDE_METADATA_PLAN)} is missing" unless IDE_METADATA_PLAN.file
 failures << "#{rel(LAUNCHER_EXPORT_PLAN)} is missing" unless LAUNCHER_EXPORT_PLAN.file?
 failures << "#{rel(MODERNIZATION_PLAN)} is missing" unless MODERNIZATION_PLAN.file?
 failures << "#{rel(HOSTED_VALIDATION_PLAN)} is missing" unless HOSTED_VALIDATION_PLAN.file?
+failures << "#{rel(GUARD_TEST_PLAN)} is missing" unless GUARD_TEST_PLAN.file?
+failures << "#{rel(DEPENDENCY_REVIEW_PLAN)} is missing" unless DEPENDENCY_REVIEW_PLAN.file?
 
 if ROOT.join('.travis.yml').exist?
   failures << '.travis.yml is obsolete and must not replace the hosted contract workflow'
@@ -76,18 +80,53 @@ if HOSTED_VALIDATION_WORKFLOW.file?
   workflow = HOSTED_VALIDATION_WORKFLOW.read
   [
     'runs-on: ubuntu-24.04',
+    'timeout-minutes: 5',
+    'cancel-in-progress: true',
     'permissions:',
     'contents: read',
     'uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10',
+    'persist-credentials: false',
+    'uses: actions/setup-java@be666c2fcd27ec809703dec50e508c2fdc7f6654',
+    'distribution: corretto',
+    "java-version: '17'",
     'run: make check'
   ].each do |fragment|
     failures << "#{rel(HOSTED_VALIDATION_WORKFLOW)} must include #{fragment.inspect}" unless workflow.include?(fragment)
   end
 
-  workflow.scan(/^\s*uses:\s*([^@\s]+)@([^\s#]+)/).each do |action, revision|
+  actions = workflow.scan(/^\s*(?:-\s*)?uses:\s*([^@\s]+)@([^\s#]+)/)
+  expected_actions = [
+    ['actions/checkout', 'df4cb1c069e1874edd31b4311f1884172cec0e10'],
+    ['actions/setup-java', 'be666c2fcd27ec809703dec50e508c2fdc7f6654']
+  ]
+  failures << "#{rel(HOSTED_VALIDATION_WORKFLOW)} must use only approved actions" unless actions == expected_actions
+
+  unless workflow.scan(/^permissions:$/).length == 1 &&
+         !workflow.match?(/^\s+[A-Za-z0-9_-]+:\s*write\s*$/)
+    failures << "#{rel(HOSTED_VALIDATION_WORKFLOW)} must keep exactly one read-only permissions block"
+  end
+
+  unless workflow.scan(/persist-credentials:\s*false/).length == 1
+    failures << "#{rel(HOSTED_VALIDATION_WORKFLOW)} must disable persisted checkout credentials exactly once"
+  end
+
+  %w[push: pull_request: workflow_dispatch:].each do |trigger|
+    failures << "#{rel(HOSTED_VALIDATION_WORKFLOW)} must include #{trigger}" unless workflow.match?(/^  #{Regexp.escape(trigger)}$/)
+  end
+
+  if workflow.include?('pull_request_target:')
+    failures << "#{rel(HOSTED_VALIDATION_WORKFLOW)} must not run untrusted pull requests with target-branch privileges"
+  end
+
+  actions.each do |action, revision|
     unless revision.match?(/\A[a-f0-9]{40}\z/)
       failures << "#{rel(HOSTED_VALIDATION_WORKFLOW)} action #{action} must be pinned to a full commit SHA"
     end
+  end
+
+  if workflow.match?(/\b(?:gradle|npm|bundle|gem)\s+(?:install|build|test)\b/) ||
+     workflow.match?(/\.\/gradlew\s+(?:build|test|assemble)/)
+    failures << "#{rel(HOSTED_VALIDATION_WORKFLOW)} must keep hosted validation dependency-free"
   end
 else
   failures << "#{rel(HOSTED_VALIDATION_WORKFLOW)} is missing"
@@ -106,6 +145,10 @@ docs_plans.each do |plan_path|
 end
 
 main_activity = 'app/src/main/java/com/foursquare/rideup/MainActivity.java'
+guard_helper = 'app/src/main/java/com/foursquare/rideup/RideUpGuards.java'
+guard_unit_test = 'app/src/test/java/com/foursquare/rideup/RideUpGuardsTest.java'
+guard_contract_test = 'scripts/java/com/foursquare/rideup/RideUpGuardsContractTest.java'
+guard_test_runner = 'scripts/test-ride-up-guards.rb'
 constants_example = 'app/src/main/java/com/foursquare/rideup/Constants.java.example'
 gitignore = '.gitignore'
 build_gradle = 'build.gradle'
@@ -145,7 +188,9 @@ if file?(main_activity)
   if activity_result.nil?
     failures << "#{main_activity} onActivityResult could not be validated"
   else
-    unless activity_result.match?(/requestCode\s*!=\s*PLACE_PICKER_REQUEST\s*\|\|\s*resultCode\s*!=\s*PlacePicker\.PLACE_PICKED_RESULT_CODE/)
+    unless activity_result.include?('RideUpGuards.isExpectedActivityResult(') &&
+           activity_result.include?('PLACE_PICKER_REQUEST') &&
+           activity_result.include?('PlacePicker.PLACE_PICKED_RESULT_CODE')
       failures << "#{main_activity} must require matching PlacePicker request and result codes before reading result data"
     end
 
@@ -179,7 +224,8 @@ if file?(main_activity)
   if permission_result.nil?
     failures << "#{main_activity} onRequestPermissionsResult could not be validated"
   else
-    unless permission_result.include?('allLocationPermissionsGranted(grantResults)')
+    unless permission_result.include?('RideUpGuards.allPermissionsGranted(') &&
+           permission_result.include?('PackageManager.PERMISSION_GRANTED')
       failures << "#{main_activity} must require every requested location permission grant before fetching the closest place"
     end
 
@@ -190,13 +236,6 @@ if file?(main_activity)
     unless permission_result.include?('super.onRequestPermissionsResult(requestCode, permissions, grantResults);')
       failures << "#{main_activity} must forward non-location permission results to the superclass"
     end
-  end
-
-  unless source.include?('private boolean allLocationPermissionsGranted(int[] grantResults)') &&
-         source.include?('if (grantResults.length == 0)') &&
-         source.include?('for (int result : grantResults)') &&
-         source.include?('result != PackageManager.PERMISSION_GRANTED')
-    failures << "#{main_activity} must define allLocationPermissionsGranted(int[]) with empty-result and per-result denial checks"
   end
 
   {
@@ -218,6 +257,37 @@ if file?(main_activity)
   end
 else
   failures << "#{main_activity} is missing"
+end
+
+if file?(guard_helper)
+  helper = read(guard_helper)
+  unless helper.include?('grantResults == null || grantResults.length == 0') &&
+         helper.include?('for (int result : grantResults)') &&
+         helper.include?('result != grantedValue')
+    failures << "#{guard_helper} must reject null, empty, and partially denied permission results"
+  end
+  unless helper.include?('requestCode == expectedRequestCode') &&
+         helper.include?('resultCode == expectedResultCode')
+    failures << "#{guard_helper} must require matching request and result codes"
+  end
+else
+  failures << "#{guard_helper} is missing"
+end
+
+{
+  guard_unit_test => %w[activityResultRequiresMatchingRequestAndResultCodes permissionsRequireEveryResultToBeGranted],
+  guard_contract_test => ['matching activity result should be accepted', 'partial permission grants should be rejected'],
+  guard_test_runner => ['javac', 'java', 'Dir.mktmpdir']
+}.each do |path, fragments|
+  unless file?(path)
+    failures << "#{path} is missing"
+    next
+  end
+
+  content = read(path)
+  fragments.each do |fragment|
+    failures << "#{path} must include #{fragment.inspect}" unless content.include?(fragment)
+  end
 end
 
 if file?(constants_example)
@@ -292,12 +362,23 @@ if file?(app_build_gradle)
          app_gradle_source.include?('targetSdkVersion 23')
     failures << "#{app_build_gradle} must keep the current SDK 23 baseline visible until the modernization plan is executed"
   end
+  unless app_gradle_source.include?("testCompile 'junit:junit:4.13.2'")
+    failures << "#{app_build_gradle} must use the maintained JUnit 4.13.2 test dependency"
+  end
+  unless app_gradle_source.include?("compile 'com.google.code.gson:gson:2.8.9'")
+    failures << "#{app_build_gradle} must override PlacePicker's vulnerable Gson 2.5 dependency"
+  end
 
   if manifest_package && application_id && application_id != manifest_package
     failures << "#{app_build_gradle} applicationId #{application_id} must match manifest package #{manifest_package}"
   end
 else
   failures << "#{app_build_gradle} is missing"
+end
+
+makefile = read('Makefile')
+unless makefile.include?('$(RUBY) "$(ROOT)/scripts/test-ride-up-guards.rb"')
+  failures << 'Makefile test target must run the pure Java guard behavior harness from ROOT'
 end
 
 if file?(landing_page)
@@ -350,6 +431,10 @@ unless [readme, vision, security, changes].all? { |text| text.include?('Android 
   failures << 'docs must mention the Android modernization plan'
 end
 
+unless [readme, vision, security, changes].all? { |text| text.include?('guard behavior') }
+  failures << 'docs must mention executable guard behavior validation'
+end
+
 modernization_plan = MODERNIZATION_PLAN.file? ? MODERNIZATION_PLAN.read : ''
 unless modernization_plan.include?('Status: Completed') &&
        modernization_plan.include?('make check') &&
@@ -357,6 +442,14 @@ unless modernization_plan.include?('Status: Completed') &&
        modernization_plan.include?('targetSdkVersion 23') &&
        modernization_plan.include?('AndroidX')
   failures << "#{rel(MODERNIZATION_PLAN)} must record the SDK 23 baseline, AndroidX migration path, and make check verification"
+end
+
+dependency_review = DEPENDENCY_REVIEW_PLAN.file? ? DEPENDENCY_REVIEW_PLAN.read : ''
+unless dependency_review.include?('CVE-2021-0341') &&
+       dependency_review.include?('CVE-2022-25647') &&
+       dependency_review.include?('Gson 2.8.9') &&
+       dependency_review.include?('OkHttp 4.9.2')
+  failures << "#{rel(DEPENDENCY_REVIEW_PLAN)} must record fixed and unresolved dependency advisories"
 end
 
 if failures.empty?

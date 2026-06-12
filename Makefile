@@ -9,6 +9,7 @@ lint:
 	$(RUBY) "$(ROOT)/scripts/check-android-contract.rb"
 
 test: lint
+	$(RUBY) "$(ROOT)/scripts/test-ride-up-guards.rb"
 	@if [ "$(RUN_LEGACY_GRADLE)" = "1" ]; then \
 		if [ -n "$(ANDROID_HOME)" ]; then cd "$(ROOT)" && ANDROID_HOME="$(ANDROID_HOME)" ./gradlew test ; else cd "$(ROOT)" && ./gradlew test ; fi ; \
 	else \
