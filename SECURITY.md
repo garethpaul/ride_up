@@ -56,6 +56,11 @@ If this project requests device permissions such as location, camera, microphone
 
 Dependency updates should come from trusted package managers and should keep lockfiles in sync when lockfiles exist. Do not commit credentials, private keys, tokens, generated secrets, or machine-local configuration. If a vulnerability depends on a compromised package, typosquatting risk, insecure transitive dependency, or unsafe build step, include the package name, affected version, and the path through which it is used.
 
+- The Gradle wrapper pins the 4.10.2 all-distribution to the publisher-provided
+  SHA-256 `b7aedd369a26b177147bcb715f8b1fc4fe32b0a6ade0d7fd8ee5ed0c6f731f2c`.
+  This protects the downloaded distribution archive; it does not establish
+  provenance for the checked-in wrapper JAR or application dependencies.
+
 - Gson 2.8.9 overrides PlacePicker's Gson 2.5 dependency to address
   CVE-2022-25647.
 - Mapbox 4.2.0-beta.5 and the app still resolve affected OkHttp 3.x

@@ -15,6 +15,7 @@ GUARD_TEST_PLAN = DOCS_PLANS.join('2026-06-12-pure-java-guard-tests.md')
 DEPENDENCY_REVIEW_PLAN = DOCS_PLANS.join('2026-06-12-dependency-security-review.md')
 HOSTED_BUILD_PLAN = DOCS_PLANS.join('2026-06-12-hosted-android-build.md')
 PERMISSION_IDENTITY_PLAN = DOCS_PLANS.join('2026-06-12-location-permission-identity.md')
+GRADLE_CHECKSUM_PLAN = DOCS_PLANS.join('2026-06-12-gradle-distribution-checksum.md')
 HOSTED_VALIDATION_WORKFLOW = ROOT.join('.github/workflows/check.yml')
 CODEOWNERS = ROOT.join('.github/CODEOWNERS')
 GRADLE_RUNNER = ROOT.join('scripts/run-android-gradle.sh')
@@ -79,6 +80,7 @@ failures << "#{rel(GUARD_TEST_PLAN)} is missing" unless GUARD_TEST_PLAN.file?
 failures << "#{rel(DEPENDENCY_REVIEW_PLAN)} is missing" unless DEPENDENCY_REVIEW_PLAN.file?
 failures << "#{rel(HOSTED_BUILD_PLAN)} is missing" unless HOSTED_BUILD_PLAN.file?
 failures << "#{rel(PERMISSION_IDENTITY_PLAN)} is missing" unless PERMISSION_IDENTITY_PLAN.file?
+failures << "#{rel(GRADLE_CHECKSUM_PLAN)} is missing" unless GRADLE_CHECKSUM_PLAN.file?
 
 if ROOT.join('.travis.yml').exist?
   failures << '.travis.yml is obsolete and must not replace the hosted contract workflow'
@@ -392,8 +394,21 @@ else
   failures << "#{build_gradle} is missing"
 end
 
-unless WRAPPER_PROPERTIES.file? && WRAPPER_PROPERTIES.read.include?('gradle-4.10.2-all.zip')
-  failures << "#{rel(WRAPPER_PROPERTIES)} must use the AGP-compatible Gradle 4.10.2 distribution"
+if WRAPPER_PROPERTIES.file?
+  wrapper_lines = WRAPPER_PROPERTIES.read.lines.map(&:strip)
+  distribution_urls = wrapper_lines.grep(/\AdistributionUrl=/)
+  distribution_checksums = wrapper_lines.grep(/\AdistributionSha256Sum=/)
+  expected_distribution_url = 'distributionUrl=https\://services.gradle.org/distributions/gradle-4.10.2-all.zip'
+  expected_distribution_checksum = 'distributionSha256Sum=b7aedd369a26b177147bcb715f8b1fc4fe32b0a6ade0d7fd8ee5ed0c6f731f2c'
+
+  unless distribution_urls == [expected_distribution_url]
+    failures << "#{rel(WRAPPER_PROPERTIES)} must declare exactly the AGP-compatible Gradle 4.10.2 distribution URL"
+  end
+  unless distribution_checksums == [expected_distribution_checksum]
+    failures << "#{rel(WRAPPER_PROPERTIES)} must declare exactly the official Gradle 4.10.2 all-distribution SHA-256"
+  end
+else
+  failures << "#{rel(WRAPPER_PROPERTIES)} is missing"
 end
 
 manifest_package = nil
@@ -575,6 +590,10 @@ unless changes.include?('AGP 3.3.2, Gradle 4.10.2') &&
   failures << 'CHANGES.md must record the hosted Android build bridge'
 end
 
+unless [readme, security, changes].all? { |text| text.include?('b7aedd369a26b177147bcb715f8b1fc4fe32b0a6ade0d7fd8ee5ed0c6f731f2c') }
+  failures << 'README.md, SECURITY.md, and CHANGES.md must record the verified Gradle 4.10.2 distribution checksum'
+end
+
 modernization_plan = MODERNIZATION_PLAN.file? ? MODERNIZATION_PLAN.read : ''
 unless modernization_plan.include?('Status: Completed') &&
        modernization_plan.include?('make check') &&
@@ -600,6 +619,15 @@ unless permission_identity_plan.include?('Status: Completed') &&
        permission_identity_plan.include?('make check') &&
        permission_identity_plan.include?('hostile permission-identity mutations')
   failures << "#{rel(PERMISSION_IDENTITY_PLAN)} must record completed status and actual permission-identity verification"
+end
+
+gradle_checksum_plan = GRADLE_CHECKSUM_PLAN.file? ? GRADLE_CHECKSUM_PLAN.read : ''
+unless gradle_checksum_plan.include?('Status: Completed') &&
+       gradle_checksum_plan.include?('distributionSha256Sum') &&
+       gradle_checksum_plan.include?('ruby scripts/check-android-contract.rb') &&
+       gradle_checksum_plan.include?('make check') &&
+       gradle_checksum_plan.include?('hostile wrapper mutations')
+  failures << "#{rel(GRADLE_CHECKSUM_PLAN)} must record completed status and actual wrapper-checksum verification"
 end
 
 if failures.empty?

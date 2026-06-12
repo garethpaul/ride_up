@@ -87,6 +87,8 @@ secrets.
 - The compatibility bridge uses Android Gradle Plugin 3.3.2 and Gradle 4.10.2
   while preserving compile/target SDK 23 and all application dependency
   versions.
+- The wrapper verifies the Gradle 4.10.2 all-distribution with the publisher's
+  SHA-256 `b7aedd369a26b177147bcb715f8b1fc4fe32b0a6ade0d7fd8ee5ed0c6f731f2c`.
 - `app/lint.xml` suppresses only the old lint engine's Gson module-descriptor
   failure and the separately tracked target-SDK expiration. Other findings
   remain visible in the lint report.
