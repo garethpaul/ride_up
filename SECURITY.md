@@ -63,10 +63,12 @@ Dependency updates should come from trusted package managers and should keep loc
 
 - Gson 2.8.9 overrides PlacePicker's Gson 2.5 dependency to address
   CVE-2022-25647.
-- Mapbox 4.2.0-beta.5 and the app still resolve affected OkHttp 3.x
-  (CVE-2021-0341). The fixed OkHttp line requires the dedicated Android SDK and
-  Mapbox compatibility upgrade before this sample can be treated as production
-  network software.
+- The app now forces OkHttp and its logging interceptor to OkHttp 4.9.2, which
+  removes the resolved OkHttp 3.x versions affected by CVE-2021-0341. The
+  migration raises the minimum Android version to API 21 and verifies both
+  debug and release runtime graphs and APKs. The remaining legacy Mapbox beta
+  and Android SDK 23 stack still require broader modernization and device
+  testing before production use.
 
 ## Safe Research Guidelines
 

@@ -38,6 +38,8 @@ Priority:
   replaced in a dedicated compatibility pass
 - Keep dependency-free Android source contracts enforced in hosted validation
 - Keep executable guard behavior validation independent of the legacy Android SDK
+- Keep resolved OkHttp and logging-interceptor artifacts on 4.9.2, with API 21
+  as the documented minimum and both APK variants in the build gate
 
 Next priorities:
 
@@ -47,8 +49,8 @@ Next priorities:
 - Modernize dependencies in a separate compatibility pass
 - Execute the Android modernization plan with wrapper, SDK, AndroidX, and
   emulator smoke-test coverage
-- Upgrade Mapbox and OkHttp together to resolve CVE-2021-0341 without silently
-  breaking the Android compatibility floor
+- Modernize the remaining Mapbox beta and Android SDK 23 stack, preserving the
+  verified OkHttp 4.9.2 and API 21 compatibility floor
 
 Contribution rules:
 

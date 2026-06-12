@@ -15,7 +15,10 @@
 - Pinned hosted Corretto setup, disabled persisted checkout credentials, and
   upgraded the future Gradle test dependency to JUnit 4.13.2.
 - Overrode PlacePicker's vulnerable Gson 2.5 dependency with Gson 2.8.9 and
-  recorded the unresolved legacy Mapbox/OkHttp CVE-2021-0341 risk.
+  recorded the legacy Mapbox/OkHttp CVE-2021-0341 risk.
+- Raised the minimum Android version to API 21, forced OkHttp and its logging
+  interceptor to OkHttp 4.9.2, verified exact debug/release resolution, and
+  added both APK variants to the normal build gate.
 
 ## 2026-06-10
 

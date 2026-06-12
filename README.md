@@ -75,8 +75,9 @@ secrets.
 - `make check` runs the static Android credential, manifest, launcher export,
   application ID, landing-page package-link, and local landing asset contract
   check.
-  With an Android SDK configured, the same command also runs Gradle lint, both
-  unit-test variants, and debug assembly. A temporary non-secret
+  With an Android SDK configured, the same command also verifies the resolved
+  OkHttp graph, runs Gradle lint and both unit-test variants, and assembles debug
+  and release APKs. A temporary non-secret
   `Constants.java` is generated from the checked-in example only when local
   credentials are absent and is removed on every exit.
 - The Android modernization plan records the current `compileSdkVersion 23` and
@@ -140,9 +141,10 @@ When the required SDK or runtime is unavailable, use static checks and source re
 - This looks like a legacy Android project or sample. Expect Android SDK, Gradle, and support-library versions to matter.
 - PlacePicker's transitive Gson 2.5 is overridden with Gson 2.8.9 to address
   CVE-2022-25647.
-- The Mapbox 4.2 beta dependency line still requires affected OkHttp 3.x
-  (CVE-2021-0341). Treat this sample as non-production until the dedicated SDK,
-  Mapbox, and OkHttp compatibility upgrade is built and tested on Android.
+- OkHttp and its logging interceptor are forced to OkHttp 4.9.2 to remove the
+  resolved OkHttp 3.x versions affected by CVE-2021-0341. This raises the app's
+  minimum Android version to API 21; the legacy Mapbox beta and SDK 23 stack
+  still require broader modernization and emulator/device testing.
 - See `SECURITY.md` for vulnerability reporting and safe research guidance.
 - See `VISION.md` for project direction and contribution guardrails.
 - See `docs/plans/2026-06-08-ride-up-baseline.md` for the canonical Android
@@ -178,7 +180,9 @@ When the required SDK or runtime is unavailable, use static checks and source re
 - See `docs/plans/2026-06-12-pure-java-guard-tests.md` for executable guard
   behavior validation without an Android SDK.
 - See `docs/plans/2026-06-12-dependency-security-review.md` for the OSV and
-  Maven POM dependency review, applied Gson override, and remaining OkHttp risk.
+  Maven POM dependency review and applied Gson and OkHttp overrides.
+- See `docs/plans/2026-06-12-okhttp-492-security-migration.md` for the resolved
+  graph, API-floor, test, lint, dex, and APK verification evidence.
 
 ## Contributing
 

@@ -4,7 +4,14 @@ ANDROID_HOME ?=
 ANDROID_SDK_ROOT ?=
 ANDROID_SDK := $(if $(ANDROID_HOME),$(ANDROID_HOME),$(ANDROID_SDK_ROOT))
 
-.PHONY: build check lint test verify
+.PHONY: build check dependency lint test verify
+
+dependency:
+	@if [ -n "$(ANDROID_SDK)" ] && [ -d "$(ANDROID_SDK)" ]; then \
+		cd "$(ROOT)" && ANDROID_HOME="$(ANDROID_SDK)" ANDROID_SDK_ROOT="$(ANDROID_SDK)" scripts/run-android-gradle.sh verifyOkHttpResolution; \
+	else \
+		echo "Android SDK not configured; resolved dependency verification skipped."; \
+	fi
 
 lint:
 	$(RUBY) "$(ROOT)/scripts/check-android-contract.rb"
@@ -24,11 +31,11 @@ test:
 
 build:
 	@if [ -n "$(ANDROID_SDK)" ] && [ -d "$(ANDROID_SDK)" ]; then \
-		cd "$(ROOT)" && ANDROID_HOME="$(ANDROID_SDK)" ANDROID_SDK_ROOT="$(ANDROID_SDK)" scripts/run-android-gradle.sh assembleDebug; \
+		cd "$(ROOT)" && ANDROID_HOME="$(ANDROID_SDK)" ANDROID_SDK_ROOT="$(ANDROID_SDK)" scripts/run-android-gradle.sh assembleDebug assembleRelease; \
 	else \
 		echo "Android SDK not configured; Gradle build skipped."; \
 	fi
 
-verify: lint test build
+verify: dependency lint test build
 
 check: verify

@@ -440,6 +440,26 @@ if file?(app_build_gradle)
          app_gradle_source.include?('buildToolsVersion "28.0.3"')
     failures << "#{app_build_gradle} must keep the current SDK 23 baseline visible until the modernization plan is executed"
   end
+  unless app_gradle_source.include?('minSdkVersion 21')
+    failures << "#{app_build_gradle} must keep the OkHttp 4.x Android API 21 minimum"
+  end
+  [
+    "implementation 'com.squareup.okhttp3:okhttp:4.9.2'",
+    "implementation 'com.squareup.okhttp3:logging-interceptor:4.9.2'",
+    "resolutionStrategy.force 'com.squareup.okhttp3:okhttp:4.9.2'",
+    "resolutionStrategy.force 'com.squareup.okhttp3:logging-interceptor:4.9.2'",
+    'task verifyOkHttpResolution',
+    "['debugRuntimeClasspath', 'releaseRuntimeClasspath']",
+    "'logging-interceptor:4.9.2'",
+    "'okhttp:4.9.2'"
+  ].each do |contract|
+    unless app_gradle_source.include?(contract)
+      failures << "#{app_build_gradle} must preserve OkHttp security contract #{contract.inspect}"
+    end
+  end
+  if app_gradle_source.match?(/com\.squareup\.okhttp3:(?:okhttp|logging-interceptor):3\./)
+    failures << "#{app_build_gradle} must not restore vulnerable OkHttp 3.x declarations"
+  end
   unless app_gradle_source.include?("testImplementation 'junit:junit:4.13.2'")
     failures << "#{app_build_gradle} must use the maintained JUnit 4.13.2 test dependency"
   end
@@ -609,6 +629,13 @@ unless dependency_review.include?('CVE-2021-0341') &&
        dependency_review.include?('Gson 2.8.9') &&
        dependency_review.include?('OkHttp 4.9.2')
   failures << "#{rel(DEPENDENCY_REVIEW_PLAN)} must record fixed and unresolved dependency advisories"
+end
+
+makefile_source = ROOT.join('Makefile').read
+unless makefile_source.include?('scripts/run-android-gradle.sh verifyOkHttpResolution') &&
+       makefile_source.include?('scripts/run-android-gradle.sh assembleDebug assembleRelease') &&
+       makefile_source.match?(/^verify: dependency lint test build$/)
+  failures << 'Makefile must verify resolved OkHttp and assemble debug/release APKs in the Android gates'
 end
 
 

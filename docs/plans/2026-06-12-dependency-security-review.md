@@ -14,10 +14,13 @@ but known advisories and safe compatibility overrides still need to be recorded.
   Glide 3.7.0, or Mapbox Android SDK 4.2.0-beta.5 as direct coordinates.
 - PlacePicker 0.6.1 declares Gson 2.5, which is affected by CVE-2022-25647.
   The application now overrides it with binary-compatible Gson 2.8.9.
-- The application declares OkHttp 3.4.2, and Mapbox 4.2.0-beta.5 declares
-  OkHttp 3.4.1. Both are affected by CVE-2021-0341. OSV identifies OkHttp 4.9.2
-  as the fixed line, but that upgrade changes the Android compatibility floor
-  and must be validated with the Mapbox and SDK modernization work.
+- The original application declared OkHttp 3.4.2, while Mapbox
+  4.2.0-beta.5, Retrofit, and the logging interceptor requested OkHttp 3.3/3.4
+  artifacts affected by CVE-2021-0341.
+- The follow-up OkHttp security migration raises the app floor to API 21 and
+  forces both `okhttp` and `logging-interceptor` to OkHttp 4.9.2. Debug and release
+  resolution checks, lint, tests, dexing, and APK assembly validate the binary-
+  compatible override while preserving the legacy Mapbox API.
 
 ## Verification
 
@@ -27,5 +30,7 @@ but known advisories and safe compatibility overrides still need to be recorded.
 
 ## Remaining Risk
 
-Do not treat this legacy sample as production-ready network software until the
-Mapbox/OkHttp stack is upgraded and exercised on an emulator or device.
+The known OkHttp 3.x CVE is removed from resolved app configurations, but the
+legacy Mapbox beta, PlacePicker, SDK 23 target, and other archived dependencies
+still require a broader modernization and emulator/device testing before this
+sample should be treated as production-ready network software.

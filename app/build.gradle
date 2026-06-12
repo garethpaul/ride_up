@@ -6,7 +6,7 @@ android {
 
     defaultConfig {
         applicationId "com.foursquare.rideup"
-        minSdkVersion 19
+        minSdkVersion 21
         targetSdkVersion 23
         versionCode 1
         versionName "1.0"
@@ -26,12 +26,42 @@ android {
 dependencies {
     implementation fileTree(dir: 'libs', include: ['*.jar'])
     testImplementation 'junit:junit:4.13.2'
-    implementation 'com.squareup.okhttp3:okhttp:3.4.2'
+    implementation 'com.squareup.okhttp3:okhttp:4.9.2'
+    implementation 'com.squareup.okhttp3:logging-interceptor:4.9.2'
     implementation 'com.google.code.gson:gson:2.8.9'
     implementation 'com.android.support:appcompat-v7:23.2.0'
     implementation 'com.foursquare:placepicker:0.6.1'
     implementation 'com.github.bumptech.glide:glide:3.7.0'
     implementation('com.mapbox.mapboxsdk:mapbox-android-sdk:4.2.0-beta.5@aar') {
         transitive = true
+    }
+}
+
+configurations.all {
+    resolutionStrategy.force 'com.squareup.okhttp3:okhttp:4.9.2'
+    resolutionStrategy.force 'com.squareup.okhttp3:logging-interceptor:4.9.2'
+}
+
+task verifyOkHttpResolution {
+    doLast {
+        ['debugRuntimeClasspath', 'releaseRuntimeClasspath'].each { configurationName ->
+            def artifacts = configurations.getByName(configurationName)
+                .resolvedConfiguration
+                .resolvedArtifacts
+                .findAll { it.moduleVersion.id.group == 'com.squareup.okhttp3' }
+            def resolvedModules = artifacts.collect {
+                "${it.name}:${it.moduleVersion.id.version}"
+            }.sort()
+            def expectedModules = [
+                'logging-interceptor:4.9.2',
+                'okhttp:4.9.2'
+            ]
+            if (resolvedModules != expectedModules) {
+                throw new GradleException(
+                    "${configurationName} must resolve only ${expectedModules}; resolved ${resolvedModules}"
+                )
+            }
+            println "${configurationName} OkHttp modules: ${resolvedModules}"
+        }
     }
 }
