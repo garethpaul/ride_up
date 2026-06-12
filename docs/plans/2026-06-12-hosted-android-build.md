@@ -64,6 +64,10 @@ downgrading security overrides, or changing RideUp runtime behavior.
   failed Gradle commands and preserved a pre-existing local credential file.
 - All 28 focused toolchain, dependency, workflow, runner, lint, ownership,
   documentation, and plan mutations were rejected.
+- Initial push run `27403373400` and pull-request run `27403374077` failed
+  before project verification because current `sdkmanager` requires Java 17
+  while the workflow had already selected Java 8. SDK installation now runs on
+  the hosted default JDK before Corretto 8 is selected for Gradle.
 - Exact-head hosted verification remains pending.
 
 ## Boundaries

@@ -111,14 +111,14 @@ if HOSTED_VALIDATION_WORKFLOW.file?
             with:
               persist-credentials: false
 
+          - name: Install Android SDK packages
+            run: '"${ANDROID_HOME}/cmdline-tools/latest/bin/sdkmanager" "platform-tools" "platforms;android-23" "build-tools;28.0.3"'
+
           - name: Set up Java
             uses: actions/setup-java@be666c2fcd27ec809703dec50e508c2fdc7f6654 # v5.2.0
             with:
               distribution: corretto
               java-version: '8'
-
-          - name: Install Android SDK packages
-            run: '"${ANDROID_HOME}/cmdline-tools/latest/bin/sdkmanager" "platform-tools" "platforms;android-23" "build-tools;28.0.3"'
 
           - name: Run full verification
             run: make check
