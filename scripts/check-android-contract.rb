@@ -146,8 +146,8 @@ end
 
 if HOSTED_BUILD_PLAN.file?
   hosted_build_plan = HOSTED_BUILD_PLAN.read
-  unless hosted_build_plan.include?('## Status: Implementation Complete; Hosted Verification Pending')
-    failures << "#{rel(HOSTED_BUILD_PLAN)} must truthfully record pending hosted verification"
+  unless hosted_build_plan.include?('## Status: Completed')
+    failures << "#{rel(HOSTED_BUILD_PLAN)} must record completed status"
   end
   [
     'AGP 3.3.2 with Gradle 4.10.2 and build-tools 28.0.3',
@@ -155,7 +155,8 @@ if HOSTED_BUILD_PLAN.file?
     'Repeat the complete gate from a fresh external clone.',
     'SDK-backed `make check` passed with Android API 23 and build-tools 28.0.3',
     'All 28 focused toolchain, dependency, workflow, runner, lint, ownership,',
-    'Exact-head hosted verification remains pending.',
+    'c1826e4f8cf0de0ae596d55a26621e901556efe0',
+    'canonical push run `27403417451` and pull-request run `27403418502`',
     'Pass exact-head hosted verification before completion.'
   ].each do |evidence|
     unless hosted_build_plan.include?(evidence)

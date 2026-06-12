@@ -1,6 +1,6 @@
 # Hosted Android Build
 
-## Status: Implementation Complete; Hosted Verification Pending
+## Status: Completed
 
 ## Context
 
@@ -68,7 +68,8 @@ downgrading security overrides, or changing RideUp runtime behavior.
   before project verification because current `sdkmanager` requires Java 17
   while the workflow had already selected Java 8. SDK installation now runs on
   the hosted default JDK before Corretto 8 is selected for Gradle.
-- Exact-head hosted verification remains pending.
+- Implementation SHA `c1826e4f8cf0de0ae596d55a26621e901556efe0`
+  passed canonical push run `27403417451` and pull-request run `27403418502`.
 
 ## Boundaries
 
