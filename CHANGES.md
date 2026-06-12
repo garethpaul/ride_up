@@ -7,6 +7,8 @@
   credential placeholders that are removed after every Gradle invocation.
 - Added executable Java guard behavior tests for PlacePicker request routing
   and complete location permission grants without requiring an Android SDK.
+- Required location permission callbacks to return the exact requested
+  coarse/fine permission set once with aligned granted results.
 - Pinned hosted Corretto setup, disabled persisted checkout credentials, and
   upgraded the future Gradle test dependency to JUnit 4.13.2.
 - Overrode PlacePicker's vulnerable Gson 2.5 dependency with Gson 2.8.9 and

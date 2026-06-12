@@ -28,7 +28,8 @@ Priority:
 - Keep PlacePicker result handling guarded before reading venues or map state
 - Keep PlacePicker activity results scoped to the request that launched them
 - Keep startup current-place lookup behind granted location permission
-- Keep permission-result handling gated on every requested location grant
+- Keep permission-result handling gated on the exact requested location names,
+  aligned results, and every requested location grant
 - Keep unrelated permission-result callbacks forwarded to the superclass
 - Keep PlacePicker and current-place coordinates guarded behind venue locations
 - Keep MapView lifecycle forwarding guarded for missing view instances

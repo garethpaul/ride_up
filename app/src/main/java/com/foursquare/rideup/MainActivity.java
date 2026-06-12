@@ -64,6 +64,10 @@ public class MainActivity extends AppCompatActivity {
     private LocationServices locationServices;
     private static final int PERMISSIONS_LOCATION = 0;
     private static final int PLACE_PICKER_REQUEST = 9001;
+    private static final String[] LOCATION_PERMISSIONS = new String[]{
+            Manifest.permission.ACCESS_COARSE_LOCATION,
+            Manifest.permission.ACCESS_FINE_LOCATION
+    };
 
 
     @Override
@@ -81,9 +85,7 @@ public class MainActivity extends AppCompatActivity {
         locationServices = LocationServices.getLocationServices(MainActivity.this);
         boolean hasLocationPermission = locationServices.areLocationPermissionsGranted();
         if (!hasLocationPermission) {
-            ActivityCompat.requestPermissions(this, new String[]{
-                    Manifest.permission.ACCESS_COARSE_LOCATION,
-                    Manifest.permission.ACCESS_FINE_LOCATION}, PERMISSIONS_LOCATION);
+            ActivityCompat.requestPermissions(this, LOCATION_PERMISSIONS, PERMISSIONS_LOCATION);
         }
 
         // Request a ride
@@ -356,8 +358,11 @@ public class MainActivity extends AppCompatActivity {
     public void onRequestPermissionsResult(
             int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
         if (requestCode == PERMISSIONS_LOCATION) {
-            if (RideUpGuards.allPermissionsGranted(
-                    grantResults, PackageManager.PERMISSION_GRANTED)) {
+            if (RideUpGuards.areExpectedPermissionsGranted(
+                    permissions,
+                    grantResults,
+                    LOCATION_PERMISSIONS,
+                    PackageManager.PERMISSION_GRANTED)) {
                 getClosestPlace();
             }
         } else {

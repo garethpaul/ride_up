@@ -106,16 +106,18 @@ secrets.
   before the callback consumes picker data.
 - The static checker verifies startup current-place lookup only runs after
   location permission is already granted.
-- The static checker verifies the permission callback waits for every requested
-  location permission to be granted before starting the current-place lookup.
+- The static checker verifies the permission callback names the exact requested
+  coarse/fine location set once, aligns names with results, and receives every
+  grant before starting the current-place lookup.
 - The static checker verifies non-location permission callbacks are forwarded
   to the superclass instead of being swallowed.
 - The static checker verifies current-place callbacks ignore missing venue or
   venue-location payloads before reading coordinates.
 - The static checker verifies MapView lifecycle callbacks guard missing map
   instances before forwarding lifecycle events.
-- The guard behavior harness executes null, empty, partial, and complete
-  permission results plus matching and unrelated PlacePicker callback codes.
+- The guard behavior harness executes reordered, missing, unknown, duplicate,
+  null, misaligned, partial, and complete permission callbacks plus matching
+  and unrelated PlacePicker callback codes.
 - The static checker verifies local IDE metadata stays ignored and untracked.
 
 When the required SDK or runtime is unavailable, use static checks and source review first, then verify on a machine that has the matching platform toolchain.

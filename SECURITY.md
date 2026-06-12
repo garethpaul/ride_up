@@ -42,6 +42,9 @@ Helpful reports include:
   to repository contents, and pins third-party actions by commit.
 - Android activity-result request codes are treated as provenance checks;
   unrelated callbacks must not be parsed as PlacePicker venue data.
+- Location permission callbacks must identify the exact requested coarse/fine
+  permission set once and align each name with a granted result before any
+  location-backed lookup starts.
 - Hosted guard behavior validation executes permission and request-code
   decisions without loading project dependencies or local credentials.
 

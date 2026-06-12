@@ -14,6 +14,7 @@ HOSTED_VALIDATION_PLAN = DOCS_PLANS.join('2026-06-10-hosted-contract-validation.
 GUARD_TEST_PLAN = DOCS_PLANS.join('2026-06-12-pure-java-guard-tests.md')
 DEPENDENCY_REVIEW_PLAN = DOCS_PLANS.join('2026-06-12-dependency-security-review.md')
 HOSTED_BUILD_PLAN = DOCS_PLANS.join('2026-06-12-hosted-android-build.md')
+PERMISSION_IDENTITY_PLAN = DOCS_PLANS.join('2026-06-12-location-permission-identity.md')
 HOSTED_VALIDATION_WORKFLOW = ROOT.join('.github/workflows/check.yml')
 CODEOWNERS = ROOT.join('.github/CODEOWNERS')
 GRADLE_RUNNER = ROOT.join('scripts/run-android-gradle.sh')
@@ -77,6 +78,7 @@ failures << "#{rel(HOSTED_VALIDATION_PLAN)} is missing" unless HOSTED_VALIDATION
 failures << "#{rel(GUARD_TEST_PLAN)} is missing" unless GUARD_TEST_PLAN.file?
 failures << "#{rel(DEPENDENCY_REVIEW_PLAN)} is missing" unless DEPENDENCY_REVIEW_PLAN.file?
 failures << "#{rel(HOSTED_BUILD_PLAN)} is missing" unless HOSTED_BUILD_PLAN.file?
+failures << "#{rel(PERMISSION_IDENTITY_PLAN)} is missing" unless PERMISSION_IDENTITY_PLAN.file?
 
 if ROOT.join('.travis.yml').exist?
   failures << '.travis.yml is obsolete and must not replace the hosted contract workflow'
@@ -205,6 +207,11 @@ if file?(main_activity)
     failures << "#{main_activity} must launch PlacePicker with a named request-code constant"
   end
 
+  unless source.scan(/private static final String\[\] LOCATION_PERMISSIONS/).length == 1 &&
+         source.match?(/private static final String\[\] LOCATION_PERMISSIONS\s*=\s*new String\[\]\s*\{\s*Manifest\.permission\.ACCESS_COARSE_LOCATION,\s*Manifest\.permission\.ACCESS_FINE_LOCATION\s*\};/m)
+    failures << "#{main_activity} must define the exact expected location permission set once"
+  end
+
   activity_result = java_method_source(source, 'protected void onActivityResult(')
   if activity_result.nil?
     failures << "#{main_activity} onActivityResult could not be validated"
@@ -239,15 +246,19 @@ if file?(main_activity)
     if on_create.scan('getClosestPlace();').length > 1
       failures << "#{main_activity} onCreate must not fetch the closest place outside the startup permission guard"
     end
+
+
+    unless on_create.include?('ActivityCompat.requestPermissions(this, LOCATION_PERMISSIONS, PERMISSIONS_LOCATION);')
+      failures << "#{main_activity} must request the canonical location permission set"
+    end
   end
 
   permission_result = java_method_source(source, 'public void onRequestPermissionsResult(')
   if permission_result.nil?
     failures << "#{main_activity} onRequestPermissionsResult could not be validated"
   else
-    unless permission_result.include?('RideUpGuards.allPermissionsGranted(') &&
-           permission_result.include?('PackageManager.PERMISSION_GRANTED')
-      failures << "#{main_activity} must require every requested location permission grant before fetching the closest place"
+    unless permission_result.match?(/RideUpGuards\.areExpectedPermissionsGranted\(\s*permissions,\s*grantResults,\s*LOCATION_PERMISSIONS,\s*PackageManager\.PERMISSION_GRANTED\s*\)/m)
+      failures << "#{main_activity} must require the exact requested location permission set before fetching the closest place"
     end
 
     if permission_result.include?('grantResults[0] == PackageManager.PERMISSION_GRANTED')
@@ -282,10 +293,17 @@ end
 
 if file?(guard_helper)
   helper = read(guard_helper)
-  unless helper.include?('grantResults == null || grantResults.length == 0') &&
-         helper.include?('for (int result : grantResults)') &&
-         helper.include?('result != grantedValue')
-    failures << "#{guard_helper} must reject null, empty, and partially denied permission results"
+  unless helper.include?('static boolean areExpectedPermissionsGranted(') &&
+         helper.include?('permissions == null || grantResults == null || expectedPermissions == null') &&
+         helper.include?('permissions.length == 0 || permissions.length != grantResults.length') &&
+         helper.include?('permissions.length != expectedPermissions.length') &&
+         helper.include?('expectedPermission == null || expectedPermission.length() == 0') &&
+         helper.include?('expectedPermission.equals(expectedPermissions[previousIndex])') &&
+         helper.include?('boolean[] matchedPermissions = new boolean[expectedPermissions.length]') &&
+         helper.include?('permission == null || grantResults[resultIndex] != grantedValue') &&
+         helper.include?('permission.equals(expectedPermissions[expectedIndex])') &&
+         helper.include?('matchedIndex < 0 || matchedPermissions[matchedIndex]')
+    failures << "#{guard_helper} must reject missing, duplicate, unknown, misaligned, null, or denied permission entries"
   end
   unless helper.include?('requestCode == expectedRequestCode') &&
          helper.include?('resultCode == expectedResultCode')
@@ -296,8 +314,23 @@ else
 end
 
 {
-  guard_unit_test => %w[activityResultRequiresMatchingRequestAndResultCodes permissionsRequireEveryResultToBeGranted],
-  guard_contract_test => ['matching activity result should be accepted', 'partial permission grants should be rejected'],
+  guard_unit_test => %w[
+    activityResultRequiresMatchingRequestAndResultCodes
+    permissionsAcceptTheExpectedGrantedSetInAnyOrder
+    permissionsRejectMissingOrMisalignedCallbackData
+    permissionsRejectUnknownDuplicateNullOrDeniedEntries
+  ],
+  guard_contract_test => [
+    'matching activity result should be accepted',
+    'expected granted permissions should be order independent',
+    'null permission results should be rejected',
+    'null expected permissions should be rejected',
+    'missing expected permissions should be rejected',
+    'misaligned permission results should be rejected',
+    'unknown permissions should be rejected',
+    'duplicate permissions should be rejected',
+    'partial permission grants should be rejected'
+  ],
   guard_test_runner => ['javac', 'java', 'Dir.mktmpdir']
 }.each do |path, fragments|
   unless file?(path)
@@ -557,6 +590,16 @@ unless dependency_review.include?('CVE-2021-0341') &&
        dependency_review.include?('Gson 2.8.9') &&
        dependency_review.include?('OkHttp 4.9.2')
   failures << "#{rel(DEPENDENCY_REVIEW_PLAN)} must record fixed and unresolved dependency advisories"
+end
+
+
+permission_identity_plan = PERMISSION_IDENTITY_PLAN.file? ? PERMISSION_IDENTITY_PLAN.read : ''
+unless permission_identity_plan.include?('Status: Completed') &&
+       permission_identity_plan.include?('ruby scripts/test-ride-up-guards.rb') &&
+       permission_identity_plan.include?('ruby scripts/check-android-contract.rb') &&
+       permission_identity_plan.include?('make check') &&
+       permission_identity_plan.include?('hostile permission-identity mutations')
+  failures << "#{rel(PERMISSION_IDENTITY_PLAN)} must record completed status and actual permission-identity verification"
 end
 
 if failures.empty?
