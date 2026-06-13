@@ -1,6 +1,6 @@
 # Telemetry Service Export Policy
 
-## Status: In Progress
+## Status: Completed
 
 ## Context
 
@@ -25,13 +25,27 @@ intent-filter or manifest-merge change from silently broadening access.
   dependency, permission, and packaging behavior.
 - Verify the merged debug and release manifests through the SDK-backed gate.
 
-## Planned Verification
+## Work Completed
+
+- Declared the existing Mapbox telemetry service explicitly non-exported.
+- Added a structured XML contract for exact service identity and export state.
+- Added seven dependency-free tests covering the valid declaration and all
+  planned malformed, missing, implicit, exported, and duplicate cases.
+- Wired the focused suite into the normal test and full verification paths.
+- Updated README, security, vision, and change documentation.
+
+## Verification
 
 - `ruby scripts/check-android-contract.rb`
 - Focused telemetry-service manifest mutations
 - SDK-backed `make check`
 - Debug and release merged-manifest inspection
 - `git diff --check`
+
+The focused manifest suite passed 7 tests and 16 assertions. SDK-backed
+`make check` passed contracts, lint, unit tests, dependency resolution, dexing,
+and debug/release APK assembly. Both merged manifests retained exactly one
+Mapbox telemetry service with `android:exported="false"`.
 
 ## Scope Boundary
 

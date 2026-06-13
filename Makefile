@@ -22,6 +22,7 @@ lint:
 	fi
 
 test:
+	$(RUBY) "$(ROOT)/scripts/test-android-manifest-contract.rb"
 	$(RUBY) "$(ROOT)/scripts/test-ride-up-guards.rb"
 	@if [ -n "$(ANDROID_SDK)" ] && [ -d "$(ANDROID_SDK)" ]; then \
 		cd "$(ROOT)" && ANDROID_HOME="$(ANDROID_SDK)" ANDROID_SDK_ROOT="$(ANDROID_SDK)" scripts/run-android-gradle.sh test; \

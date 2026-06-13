@@ -1,5 +1,11 @@
 # Changes
 
+## 2026-06-13
+
+- Declared Mapbox telemetry explicitly non-exported and added structured XML
+  contract tests for missing, implicit, exported, duplicate, and malformed
+  service declarations.
+
 ## 2026-06-12
 
 - Pinned the Gradle 4.10.2 all-distribution to the publisher-provided SHA-256

@@ -31,6 +31,9 @@ Helpful reports include:
 - Review found file, document, data, or media parsing flows; changes in those areas should receive security-focused review before merge.
 - Launcher activity exported state should stay explicit in the manifest so
   platform compatibility and entry-point exposure are reviewed together.
+- Mapbox telemetry is an internal service and should remain explicitly
+  non-exported; manifest changes must not create an external service entry
+  point.
 - Landing-page local asset references should resolve inside the repository;
   parent-directory escapes or missing local files should be treated as
   suspicious.

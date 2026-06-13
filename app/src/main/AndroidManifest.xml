@@ -24,7 +24,9 @@
             </intent-filter>
         </activity>
 
-        <service android:name="com.mapbox.mapboxsdk.telemetry.TelemetryService" />
+        <service
+            android:name="com.mapbox.mapboxsdk.telemetry.TelemetryService"
+            android:exported="false" />
 
     </application>
 

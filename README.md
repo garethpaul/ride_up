@@ -99,6 +99,8 @@ secrets.
   location-adjacent state are not included in device backups.
 - The static checker verifies the launcher activity explicitly declares its
   exported state.
+- The Mapbox telemetry service is explicitly non-exported, and the structured
+  manifest contract rejects missing, implicit, exported, or duplicate entries.
 - The static checker verifies Java `R.drawable.*` references resolve to
   checked-in drawable resources.
 - The static checker verifies landing-page local stylesheets, favicon, and
@@ -169,6 +171,8 @@ When the required SDK or runtime is unavailable, use static checks and source re
   ignore coverage.
 - See `docs/plans/2026-06-09-launcher-export-contract.md` for the launcher
   activity exported-state contract.
+- See `docs/plans/2026-06-13-telemetry-service-export-policy.md` for the
+  internal Mapbox telemetry service boundary.
 - See `docs/plans/2026-06-10-android-modernization-plan.md` for the Android
   modernization plan.
 - See `docs/plans/2026-06-10-hosted-contract-validation.md` for the hosted

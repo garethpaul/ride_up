@@ -3,6 +3,7 @@
 
 require 'pathname'
 require 'open3'
+require_relative 'android-manifest-contract'
 
 ROOT = Pathname.new(__dir__).parent.expand_path
 DOCS_PLANS = ROOT.join('docs/plans')
@@ -414,6 +415,9 @@ end
 manifest_package = nil
 if file?(manifest)
   manifest_source = read(manifest)
+  AndroidManifestContract.telemetry_service_failures(manifest_source).each do |failure|
+    failures << "#{manifest} #{failure}"
+  end
   manifest_package = manifest_source[/<manifest\b[^>]*\bpackage="([^"]+)"/, 1]
   failures << "#{manifest} must declare a package name" if manifest_package.nil? || manifest_package.empty?
   failures << "#{manifest} must disable Android backups for credential and location safety" unless manifest_source.include?('android:allowBackup="false"')
