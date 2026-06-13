@@ -1,6 +1,6 @@
 # Manifest Permission Allowlist
 
-## Status: Pending
+## Status: Completed
 
 ## Context
 
@@ -56,9 +56,20 @@ evidence without weakening the legacy Android build bridge.
 
 ## Work Completed
 
-Pending implementation.
+- Added an exact four-permission allowlist to the structured REXML manifest
+  contract.
+- Replaced substring presence checks with top-level declaration validation that
+  rejects missing, duplicate, unnamed, nested, and unexpected permissions.
+- Added focused contract tests and synchronized repository documentation.
 
 ## Verification Results
 
-Pending implementation and validation; `make check` evidence will be recorded
-before completion.
+- `ruby scripts/test-android-manifest-contract.rb` passed 9 tests and 30
+  assertions.
+- SDK-backed `make check` passed exact OkHttp resolution, structured contracts,
+  lint, executable guard tests, both unit-test variants, dexing, and
+  debug/release APK assembly.
+- Five actual-manifest mutations covering missing, duplicate, unnamed, nested,
+  and unexpected permissions were rejected.
+- Ruby syntax, `git diff --check`, credential screening, generated-artifact
+  screening, and protected-file comparison passed before the shipping commit.

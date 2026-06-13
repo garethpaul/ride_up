@@ -34,6 +34,8 @@ Helpful reports include:
 - Mapbox telemetry is an internal service and should remain explicitly
   non-exported; manifest changes must not create an external service entry
   point.
+- Android permissions are an exact top-level allowlist; changes must not add
+  unnamed, nested, duplicate, or unreviewed capabilities.
 - Landing-page local asset references should resolve inside the repository;
   parent-directory escapes or missing local files should be treated as
   suspicious.

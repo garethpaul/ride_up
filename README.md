@@ -101,6 +101,9 @@ secrets.
   exported state.
 - The Mapbox telemetry service is explicitly non-exported, and the structured
   manifest contract rejects missing, implicit, exported, or duplicate entries.
+- The same structured manifest contract requires exactly one declaration of
+  the four reviewed network and location permissions and rejects unnamed,
+  nested, duplicate, missing, or unexpected permissions.
 - The static checker verifies Java `R.drawable.*` references resolve to
   checked-in drawable resources.
 - The static checker verifies landing-page local stylesheets, favicon, and
@@ -173,6 +176,8 @@ When the required SDK or runtime is unavailable, use static checks and source re
   activity exported-state contract.
 - See `docs/plans/2026-06-13-telemetry-service-export-policy.md` for the
   internal Mapbox telemetry service boundary.
+- See `docs/plans/2026-06-13-manifest-permission-allowlist.md` for the exact
+  top-level Android permission boundary.
 - See `docs/plans/2026-06-10-android-modernization-plan.md` for the Android
   modernization plan.
 - See `docs/plans/2026-06-10-hosted-contract-validation.md` for the hosted

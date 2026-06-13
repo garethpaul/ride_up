@@ -2,6 +2,9 @@
 
 ## 2026-06-13
 
+- Required exactly one top-level declaration of each reviewed Android network
+  and location permission and rejected missing, duplicate, unnamed, nested, or
+  unexpected manifest permissions.
 - Declared Mapbox telemetry explicitly non-exported and added structured XML
   contract tests for missing, implicit, exported, duplicate, and malformed
   service declarations.

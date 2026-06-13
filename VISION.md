@@ -24,6 +24,7 @@ Priority:
 - Keep Android backup disabled for local credential and location-adjacent data
 - Keep launcher activity exported state explicit in the manifest
 - Keep the internal Mapbox telemetry service explicitly non-exported
+- Keep Android network and location permissions on an exact reviewed allowlist
 - Keep Java resource references aligned with checked-in Android drawables
 - Keep landing-page local asset references aligned with checked-in files
 - Keep PlacePicker result handling guarded before reading venues or map state

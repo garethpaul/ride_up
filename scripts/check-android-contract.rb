@@ -418,18 +418,14 @@ if file?(manifest)
   AndroidManifestContract.telemetry_service_failures(manifest_source).each do |failure|
     failures << "#{manifest} #{failure}"
   end
+  AndroidManifestContract.permission_failures(manifest_source).each do |failure|
+    failures << "#{manifest} #{failure}"
+  end
   manifest_package = manifest_source[/<manifest\b[^>]*\bpackage="([^"]+)"/, 1]
   failures << "#{manifest} must declare a package name" if manifest_package.nil? || manifest_package.empty?
   failures << "#{manifest} must disable Android backups for credential and location safety" unless manifest_source.include?('android:allowBackup="false"')
   unless manifest_source.match?(/<activity\b[^>]*android:name="\.MainActivity"[^>]*android:exported="true"/m)
     failures << "#{manifest} must explicitly export the launcher MainActivity"
-  end
-  %w[
-    android.permission.ACCESS_COARSE_LOCATION
-    android.permission.ACCESS_FINE_LOCATION
-    android.permission.INTERNET
-  ].each do |permission|
-    failures << "#{manifest} must declare #{permission}" unless manifest_source.include?(permission)
   end
 else
   failures << "#{manifest} is missing"
