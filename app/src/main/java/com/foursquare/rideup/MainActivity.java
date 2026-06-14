@@ -48,6 +48,8 @@ import com.mapbox.mapboxsdk.location.LocationServices;
 import com.mapbox.mapboxsdk.maps.MapView;
 import com.mapbox.mapboxsdk.maps.MapboxMap;
 import com.mapbox.mapboxsdk.maps.OnMapReadyCallback;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Random;
 
 
@@ -68,6 +70,10 @@ public class MainActivity extends AppCompatActivity {
             Manifest.permission.ACCESS_COARSE_LOCATION,
             Manifest.permission.ACCESS_FINE_LOCATION
     };
+    private final MarkerAnimationLifecycle markerAnimationLifecycle =
+            new MarkerAnimationLifecycle();
+    private final List<MarkerView> carMarkers = new ArrayList<>();
+    private final List<ValueAnimator> carAnimators = new ArrayList<>();
 
 
     @Override
@@ -217,6 +223,7 @@ public class MainActivity extends AppCompatActivity {
 
         pickupLocation.setText(place.getName());
         if (mapboxMap != null) {
+            clearCarMarkers();
             mapboxMap.clear();
             mapboxMap.addMarker(new MarkerViewOptions()
                     .position(new LatLng(place.getLocation().getLat(), place.getLocation().getLng()))
@@ -227,6 +234,7 @@ public class MainActivity extends AppCompatActivity {
 
     @Override
     protected void onDestroy() {
+        stopMarkerAnimations();
         if (mapView != null) {
             mapView.onDestroy();
         }
@@ -236,13 +244,18 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onResume() {
         super.onResume();
+        markerAnimationLifecycle.resume();
         if (mapView != null) {
             mapView.onResume();
+        }
+        for (MarkerView marker : new ArrayList<>(carMarkers)) {
+            randomlyMoveMarker(marker);
         }
     }
 
     @Override
     protected void onPause() {
+        stopMarkerAnimations();
         super.onPause();
         if (mapView != null) {
             mapView.onPause();
@@ -269,20 +282,36 @@ public class MainActivity extends AppCompatActivity {
     protected void addRandomCar() {
         Log.v(TAG, "addingRandomCar");
         MarkerView car = createCarMarker(getLatLngInBounds(), R.drawable.ic_car_top);
+        carMarkers.add(car);
         randomlyMoveMarker(car);
     }
 
     private void randomlyMoveMarker(final MarkerView marker) {
-        Log.v(TAG, "randomlyMoveMarker");
-        ValueAnimator animator = animateMoveMarker(marker, getLatLngInBounds());
+        if (!markerAnimationLifecycle.canAnimate()) {
+            return;
+        }
 
-        //Add listener to restart animation on end
+        Log.v(TAG, "randomlyMoveMarker");
+        final ValueAnimator animator = animateMoveMarker(marker, getLatLngInBounds());
+        carAnimators.add(animator);
+
         animator.addListener(new AnimatorListenerAdapter() {
+            private boolean canceled;
+
+            @Override
+            public void onAnimationCancel(Animator animation) {
+                canceled = true;
+            }
+
             @Override
             public void onAnimationEnd(Animator animation) {
-                randomlyMoveMarker(marker);
+                carAnimators.remove(animator);
+                if (markerAnimationLifecycle.shouldRestart(canceled)) {
+                    randomlyMoveMarker(marker);
+                }
             }
         });
+        animator.start();
     }
 
     private ValueAnimator animateMoveMarker(final MarkerView marker, LatLng to) {
@@ -293,10 +322,25 @@ public class MainActivity extends AppCompatActivity {
         markerAnimator.setDuration((long) (20 * marker.getPosition().distanceTo(to)));
         markerAnimator.setInterpolator(new AccelerateDecelerateInterpolator());
 
-        // Start
-        markerAnimator.start();
-
         return markerAnimator;
+    }
+
+    private void stopMarkerAnimations() {
+        markerAnimationLifecycle.pause();
+        cancelMarkerAnimators();
+    }
+
+    private void cancelMarkerAnimators() {
+        List<ValueAnimator> animators = new ArrayList<>(carAnimators);
+        carAnimators.clear();
+        for (ValueAnimator animator : animators) {
+            animator.cancel();
+        }
+    }
+
+    private void clearCarMarkers() {
+        cancelMarkerAnimators();
+        carMarkers.clear();
     }
 
     private MarkerView createCarMarker(LatLng start, @DrawableRes int carResource) {

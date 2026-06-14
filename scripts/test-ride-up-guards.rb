@@ -8,7 +8,9 @@ require 'tmpdir'
 root = Pathname.new(__dir__).parent.expand_path
 sources = [
   root.join('app/src/main/java/com/foursquare/rideup/RideUpGuards.java'),
-  root.join('scripts/java/com/foursquare/rideup/RideUpGuardsContractTest.java')
+  root.join('app/src/main/java/com/foursquare/rideup/MarkerAnimationLifecycle.java'),
+  root.join('scripts/java/com/foursquare/rideup/RideUpGuardsContractTest.java'),
+  root.join('scripts/java/com/foursquare/rideup/MarkerAnimationLifecycleContractTest.java')
 ]
 
 Dir.mktmpdir('ride-up-guards') do |output|
@@ -23,4 +25,11 @@ Dir.mktmpdir('ride-up-guards') do |output|
   abort test_output unless test_status.success?
 
   print test_output
+
+  lifecycle_output, lifecycle_status = Open3.capture2e(
+    'java', '-cp', output, 'com.foursquare.rideup.MarkerAnimationLifecycleContractTest'
+  )
+  abort lifecycle_output unless lifecycle_status.success?
+
+  print lifecycle_output
 end

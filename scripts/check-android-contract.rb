@@ -18,6 +18,7 @@ HOSTED_BUILD_PLAN = DOCS_PLANS.join('2026-06-12-hosted-android-build.md')
 PERMISSION_IDENTITY_PLAN = DOCS_PLANS.join('2026-06-12-location-permission-identity.md')
 GRADLE_CHECKSUM_PLAN = DOCS_PLANS.join('2026-06-12-gradle-distribution-checksum.md')
 MAKE_ROOT_PLAN = DOCS_PLANS.join('2026-06-14-make-root-override-protection.md')
+MARKER_ANIMATION_PLAN = DOCS_PLANS.join('2026-06-14-marker-animation-lifecycle.md')
 HOSTED_VALIDATION_WORKFLOW = ROOT.join('.github/workflows/check.yml')
 CODEOWNERS = ROOT.join('.github/CODEOWNERS')
 GRADLE_RUNNER = ROOT.join('scripts/run-android-gradle.sh')
@@ -83,6 +84,7 @@ failures << "#{rel(DEPENDENCY_REVIEW_PLAN)} is missing" unless DEPENDENCY_REVIEW
 failures << "#{rel(HOSTED_BUILD_PLAN)} is missing" unless HOSTED_BUILD_PLAN.file?
 failures << "#{rel(PERMISSION_IDENTITY_PLAN)} is missing" unless PERMISSION_IDENTITY_PLAN.file?
 failures << "#{rel(GRADLE_CHECKSUM_PLAN)} is missing" unless GRADLE_CHECKSUM_PLAN.file?
+failures << "#{rel(MARKER_ANIMATION_PLAN)} is missing" unless MARKER_ANIMATION_PLAN.file?
 
 if ROOT.join('.travis.yml').exist?
   failures << '.travis.yml is obsolete and must not replace the hosted contract workflow'
@@ -315,6 +317,74 @@ if file?(guard_helper)
   end
 else
   failures << "#{guard_helper} is missing"
+end
+
+marker_lifecycle = 'app/src/main/java/com/foursquare/rideup/MarkerAnimationLifecycle.java'
+marker_lifecycle_test = 'app/src/test/java/com/foursquare/rideup/MarkerAnimationLifecycleTest.java'
+marker_contract_test = 'scripts/java/com/foursquare/rideup/MarkerAnimationLifecycleContractTest.java'
+
+if file?(marker_lifecycle)
+  lifecycle_source = read(marker_lifecycle)
+  unless lifecycle_source.include?('private boolean active;') &&
+         lifecycle_source.include?('void resume()') &&
+         lifecycle_source.include?('void pause()') &&
+         lifecycle_source.include?('return active && !canceled;')
+    failures << "#{marker_lifecycle} must gate animation and canceled-completion restarts"
+  end
+else
+  failures << "#{marker_lifecycle} is missing"
+end
+
+if file?(main_activity)
+  activity_source = read(main_activity)
+  on_resume = java_method_source(activity_source, 'protected void onResume()')
+  on_pause = java_method_source(activity_source, 'protected void onPause()')
+  on_destroy = java_method_source(activity_source, 'protected void onDestroy()')
+  move_marker = java_method_source(activity_source, 'private void randomlyMoveMarker(')
+  build_animator = java_method_source(activity_source, 'private ValueAnimator animateMoveMarker(')
+  unless activity_source.include?('private final List<MarkerView> carMarkers = new ArrayList<>();') &&
+         activity_source.include?('private final List<ValueAnimator> carAnimators = new ArrayList<>();') &&
+         activity_source.include?('carMarkers.add(car);')
+    failures << "#{main_activity} must track simulated markers and their active animators"
+  end
+  unless on_resume&.include?('markerAnimationLifecycle.resume();') &&
+         on_resume&.include?('for (MarkerView marker : new ArrayList<>(carMarkers))') &&
+         on_pause&.include?('stopMarkerAnimations();') &&
+         on_destroy&.include?('stopMarkerAnimations();')
+    failures << "#{main_activity} must stop animations on pause/destroy and resume existing markers"
+  end
+  unless move_marker&.include?('if (!markerAnimationLifecycle.canAnimate())') &&
+         move_marker&.include?('public void onAnimationCancel(Animator animation)') &&
+         move_marker&.include?('if (markerAnimationLifecycle.shouldRestart(canceled))') &&
+         move_marker&.include?('animator.start();') &&
+         !build_animator&.include?('markerAnimator.start();')
+    failures << "#{main_activity} must suppress canceled or inactive completion restarts"
+  end
+else
+  failures << "#{main_activity} is missing"
+end
+
+{
+  marker_lifecycle_test => %w[
+    animationsAreInactiveUntilResumeAndStopOnPause
+    canceledAnimationsNeverRestart
+  ],
+  marker_contract_test => [
+    'animations should start inactive',
+    'resume should activate animations',
+    'canceled animations should not restart',
+    'completed animations should not restart while paused'
+  ]
+}.each do |test_path, expectations|
+  unless file?(test_path)
+    failures << "#{test_path} is missing"
+    next
+  end
+
+  test_source = read(test_path)
+  expectations.each do |expectation|
+    failures << "#{test_path} must cover #{expectation}" unless test_source.include?(expectation)
+  end
 end
 
 {
