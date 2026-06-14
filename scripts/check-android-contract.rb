@@ -17,6 +17,7 @@ DEPENDENCY_REVIEW_PLAN = DOCS_PLANS.join('2026-06-12-dependency-security-review.
 HOSTED_BUILD_PLAN = DOCS_PLANS.join('2026-06-12-hosted-android-build.md')
 PERMISSION_IDENTITY_PLAN = DOCS_PLANS.join('2026-06-12-location-permission-identity.md')
 GRADLE_CHECKSUM_PLAN = DOCS_PLANS.join('2026-06-12-gradle-distribution-checksum.md')
+MAKE_ROOT_PLAN = DOCS_PLANS.join('2026-06-14-make-root-override-protection.md')
 HOSTED_VALIDATION_WORKFLOW = ROOT.join('.github/workflows/check.yml')
 CODEOWNERS = ROOT.join('.github/CODEOWNERS')
 GRADLE_RUNNER = ROOT.join('scripts/run-android-gradle.sh')
@@ -478,6 +479,12 @@ else
 end
 
 makefile = read('Makefile')
+root_declaration = 'override ROOT := $(abspath $(dir $(lastword $(MAKEFILE_LIST))))'
+unless makefile.lines.first&.chomp == root_declaration &&
+       makefile.scan(/^override ROOT :=/).length == 1 &&
+       makefile.scan(/^ROOT\s*[:?+]?=/).empty?
+  failures << 'Makefile must define exactly one protected repository-derived ROOT declaration first'
+end
 unless makefile.include?('$(RUBY) "$(ROOT)/scripts/test-ride-up-guards.rb"')
   failures << 'Makefile test target must run the pure Java guard behavior harness from ROOT'
 end
@@ -659,6 +666,15 @@ unless gradle_checksum_plan.include?('Status: Completed') &&
        gradle_checksum_plan.include?('27436088207') &&
        !gradle_checksum_plan.match?(/pending/i)
   failures << "#{rel(GRADLE_CHECKSUM_PLAN)} must record completed status and actual wrapper-checksum verification"
+end
+
+make_root_plan = MAKE_ROOT_PLAN.file? ? MAKE_ROOT_PLAN.read : ''
+unless make_root_plan.include?('Status: Completed') &&
+       make_root_plan.include?('make ROOT=/tmp check') &&
+       make_root_plan.include?('Six root-declaration, static-contract, plan-status, and evidence mutations') &&
+       make_root_plan.include?('secret screening') &&
+       make_root_plan.include?('generated-artifact')
+  failures << "#{rel(MAKE_ROOT_PLAN)} must record completed status and actual root-override verification"
 end
 
 if failures.empty?

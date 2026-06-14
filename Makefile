@@ -1,4 +1,4 @@
-ROOT := $(abspath $(dir $(lastword $(MAKEFILE_LIST))))
+override ROOT := $(abspath $(dir $(lastword $(MAKEFILE_LIST))))
 RUBY ?= ruby
 ANDROID_HOME ?=
 ANDROID_SDK_ROOT ?=

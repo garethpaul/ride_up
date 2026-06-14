@@ -54,8 +54,15 @@ root mutations, integrity screening, and exact-head hosted validation.
 ## Verification Results
 
 - `ruby scripts/check-android-contract.rb` passed.
-- `make check` passed from the repository root and an external directory.
-- `make ROOT=/tmp check` passed while still executing repository-owned gates.
-- Root-declaration and static-contract mutations were rejected.
+- `dependency`, `lint`, `test`, `build`, `verify`, and `check` passed from the
+  repository root and an external directory; the local environment had no
+  exported Android SDK, so Gradle-backed portions used their explicit skip
+  path while the Ruby and pure-Java gates ran.
+- `make check` passed from the repository root.
+- `make ROOT=/tmp check` passed while still executing repository-owned gates;
+  the manifest contract ran 9 tests and 30 assertions and the executable guard
+  harness passed.
+- Six root-declaration, static-contract, plan-status, and evidence mutations
+  were rejected.
 - Ruby syntax, `git diff --check`, secret screening, generated-artifact
   screening, and protected-file comparison passed before shipping.
