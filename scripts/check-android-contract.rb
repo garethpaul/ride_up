@@ -4,6 +4,7 @@
 require 'pathname'
 require 'open3'
 require_relative 'android-manifest-contract'
+require_relative 'delayed-marker-contract'
 
 ROOT = Pathname.new(__dir__).parent.expand_path
 DOCS_PLANS = ROOT.join('docs/plans')
@@ -19,6 +20,7 @@ PERMISSION_IDENTITY_PLAN = DOCS_PLANS.join('2026-06-12-location-permission-ident
 GRADLE_CHECKSUM_PLAN = DOCS_PLANS.join('2026-06-12-gradle-distribution-checksum.md')
 MAKE_ROOT_PLAN = DOCS_PLANS.join('2026-06-14-make-root-override-protection.md')
 MARKER_ANIMATION_PLAN = DOCS_PLANS.join('2026-06-14-marker-animation-lifecycle.md')
+DELAYED_MARKER_PLAN = DOCS_PLANS.join('2026-06-16-delayed-marker-population-lifecycle.md')
 HOSTED_VALIDATION_WORKFLOW = ROOT.join('.github/workflows/check.yml')
 CODEOWNERS = ROOT.join('.github/CODEOWNERS')
 GRADLE_RUNNER = ROOT.join('scripts/run-android-gradle.sh')
@@ -337,6 +339,9 @@ end
 
 if file?(main_activity)
   activity_source = read(main_activity)
+  DelayedMarkerContract.failures(activity_source).each do |failure|
+    failures << "#{main_activity} #{failure}"
+  end
   on_resume = java_method_source(activity_source, 'protected void onResume()')
   on_pause = java_method_source(activity_source, 'protected void onPause()')
   on_destroy = java_method_source(activity_source, 'protected void onDestroy()')
@@ -362,6 +367,18 @@ if file?(main_activity)
   end
 else
   failures << "#{main_activity} is missing"
+end
+
+if DELAYED_MARKER_PLAN.file?
+  delayed_marker_plan = DELAYED_MARKER_PLAN.read
+  unless delayed_marker_plan.include?('Status: Completed') &&
+         delayed_marker_plan.include?('four delayed-marker mutations were rejected') &&
+         delayed_marker_plan.include?('Repository-root and external-directory `make check` passed') &&
+         delayed_marker_plan.include?('generated-artifact and credential-pattern audits passed')
+    failures << "#{rel(DELAYED_MARKER_PLAN)} must record completed delayed-marker verification"
+  end
+else
+  failures << "#{rel(DELAYED_MARKER_PLAN)} is missing"
 end
 
 {

@@ -123,6 +123,8 @@ secrets.
   venue-location payloads before reading coordinates.
 - The static checker verifies MapView lifecycle callbacks guard missing map
   instances before forwarding lifecycle events.
+- Delayed marker population checks activity lifecycle state before adding cars
+  to a map that may already be off-screen or destroyed.
 - The guard behavior harness executes reordered, missing, unknown, duplicate,
   null, misaligned, partial, and complete permission callbacks plus matching
   and unrelated PlacePicker callback codes.

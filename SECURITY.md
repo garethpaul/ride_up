@@ -52,6 +52,8 @@ Helpful reports include:
   location-backed lookup starts.
 - Hosted guard behavior validation executes permission and request-code
   decisions without loading project dependencies or local credentials.
+- Delayed marker population rejects inactive activity lifecycle state before
+  adding simulated cars to the map.
 
 ## Mobile Privacy Notes
 

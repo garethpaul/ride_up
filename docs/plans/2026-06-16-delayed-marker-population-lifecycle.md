@@ -1,6 +1,6 @@
 # Guard Delayed Marker Population With Activity Lifecycle
 
-Status: Planned
+Status: Completed
 
 ## Context
 
@@ -39,3 +39,11 @@ lifecycle-gated.
 - Record the Android SDK limitation without weakening portable checks.
 - Audit the exact diff, generated artifacts, credential patterns, conflict
   markers, binary changes, file modes, and large files.
+
+## Verification Completed
+
+- The focused delayed-marker contract passed and four delayed-marker mutations were rejected.
+- Repository-root and external-directory `make check` passed every portable
+  contract; Android SDK-dependent dependency, lint, test, and build tasks were
+  skipped because no SDK is configured on this Linux host.
+- Ruby syntax, exact-diff, generated-artifact and credential-pattern audits passed.

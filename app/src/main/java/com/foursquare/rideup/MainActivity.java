@@ -181,6 +181,9 @@ public class MainActivity extends AppCompatActivity {
                         handler.postDelayed(new Runnable() {
                             @Override
                             public void run() {
+                                if (!markerAnimationLifecycle.canAnimate()) {
+                                    return;
+                                }
                                 for (int i = 0; i < 10; i++) {
                                     addRandomCar();
                                 }

@@ -1,5 +1,9 @@
 # Changes
 
+## 2026-06-16
+
+- Guarded delayed marker population against paused or destroyed activity state.
+
 ## 2026-06-13
 
 - Required exactly one top-level declaration of each reviewed Android network
