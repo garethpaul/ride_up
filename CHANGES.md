@@ -2,6 +2,8 @@
 
 ## 2026-06-17
 
+- Removed invalid and redundant layout attributes and enforced accessible,
+  scale-independent text sizing for the pickup label and alert dialog.
 - Moved visible ride-selection copy into string resources and added accessible
   descriptions for the pickup search image and action-bar logo.
 

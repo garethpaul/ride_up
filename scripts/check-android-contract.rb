@@ -5,6 +5,7 @@ require 'pathname'
 require 'open3'
 require_relative 'android-manifest-contract'
 require_relative 'delayed-marker-contract'
+require_relative 'layout-lint-contract'
 require_relative 'layout-resource-contract'
 
 ROOT = Pathname.new(__dir__).parent.expand_path
@@ -23,6 +24,7 @@ MAKE_ROOT_PLAN = DOCS_PLANS.join('2026-06-14-make-root-override-protection.md')
 MARKER_ANIMATION_PLAN = DOCS_PLANS.join('2026-06-14-marker-animation-lifecycle.md')
 DELAYED_MARKER_PLAN = DOCS_PLANS.join('2026-06-16-delayed-marker-population-lifecycle.md')
 LAYOUT_RESOURCE_PLAN = DOCS_PLANS.join('2026-06-17-accessible-localized-layout-resources.md')
+LAYOUT_LINT_PLAN = DOCS_PLANS.join('2026-06-17-layout-lint-correctness-accessibility.md')
 HOSTED_VALIDATION_WORKFLOW = ROOT.join('.github/workflows/check.yml')
 CODEOWNERS = ROOT.join('.github/CODEOWNERS')
 GRADLE_RUNNER = ROOT.join('scripts/run-android-gradle.sh')
@@ -88,6 +90,7 @@ failures << "#{rel(DEPENDENCY_REVIEW_PLAN)} is missing" unless DEPENDENCY_REVIEW
 failures << "#{rel(HOSTED_BUILD_PLAN)} is missing" unless HOSTED_BUILD_PLAN.file?
 failures << "#{rel(PERMISSION_IDENTITY_PLAN)} is missing" unless PERMISSION_IDENTITY_PLAN.file?
 failures << "#{rel(GRADLE_CHECKSUM_PLAN)} is missing" unless GRADLE_CHECKSUM_PLAN.file?
+failures << "#{rel(LAYOUT_LINT_PLAN)} is missing" unless LAYOUT_LINT_PLAN.file?
 failures << "#{rel(MARKER_ANIMATION_PLAN)} is missing" unless MARKER_ANIMATION_PLAN.file?
 failures << "#{rel(LAYOUT_RESOURCE_PLAN)} is missing" unless LAYOUT_RESOURCE_PLAN.file?
 
@@ -745,6 +748,15 @@ LayoutResourceContract.failures(**layout_resource_inputs).each do |failure|
   failures << "layout resource contract: #{failure}"
 end
 
+layout_lint_inputs = {
+  activity_xml: layout_resource_inputs[:activity_xml],
+  alert_xml: read('app/src/main/res/values/alert_custom.xml'),
+  makefile_source: makefile_source
+}
+LayoutLintContract.failures(**layout_lint_inputs).each do |failure|
+  failures << "layout lint contract: #{failure}"
+end
+
 layout_resource_plan = LAYOUT_RESOURCE_PLAN.file? ? LAYOUT_RESOURCE_PLAN.read : ''
 unless layout_resource_plan.include?('Status: Completed') &&
        layout_resource_plan.include?('seven hostile layout-resource mutations were rejected') &&
@@ -758,6 +770,21 @@ changes = ROOT.join('CHANGES.md').read
 unless changes.include?('visible ride-selection copy into string resources') &&
        changes.include?('descriptions for the pickup search image and action-bar logo')
   failures << 'CHANGES.md must record the accessible, localizable layout resources'
+end
+
+layout_lint_plan = LAYOUT_LINT_PLAN.file? ? LAYOUT_LINT_PLAN.read : ''
+unless layout_lint_plan.include?('Status: Completed') &&
+       layout_lint_plan.include?('eight hostile layout-lint mutations were rejected') &&
+       layout_lint_plan.include?('zero `ObsoleteLayoutParam`, `SmallSp`, `SpUsage`, and `RtlHardcoded` findings') &&
+       layout_lint_plan.include?('exactly ten unrelated lint findings remained visible') &&
+       layout_lint_plan.include?('repository and external-directory portable gates passed') &&
+       layout_lint_plan.include?('SDK-backed `make check` passed')
+  failures << "#{rel(LAYOUT_LINT_PLAN)} must record completed layout-lint verification"
+end
+
+unless changes.include?('Removed invalid and redundant layout attributes') &&
+       changes.include?('scale-independent text sizing')
+  failures << 'CHANGES.md must record the layout correctness and text accessibility cleanup'
 end
 
 
