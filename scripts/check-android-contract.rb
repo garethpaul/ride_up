@@ -5,6 +5,7 @@ require 'pathname'
 require 'open3'
 require_relative 'android-manifest-contract'
 require_relative 'delayed-marker-contract'
+require_relative 'layout-resource-contract'
 
 ROOT = Pathname.new(__dir__).parent.expand_path
 DOCS_PLANS = ROOT.join('docs/plans')
@@ -21,6 +22,7 @@ GRADLE_CHECKSUM_PLAN = DOCS_PLANS.join('2026-06-12-gradle-distribution-checksum.
 MAKE_ROOT_PLAN = DOCS_PLANS.join('2026-06-14-make-root-override-protection.md')
 MARKER_ANIMATION_PLAN = DOCS_PLANS.join('2026-06-14-marker-animation-lifecycle.md')
 DELAYED_MARKER_PLAN = DOCS_PLANS.join('2026-06-16-delayed-marker-population-lifecycle.md')
+LAYOUT_RESOURCE_PLAN = DOCS_PLANS.join('2026-06-17-accessible-localized-layout-resources.md')
 HOSTED_VALIDATION_WORKFLOW = ROOT.join('.github/workflows/check.yml')
 CODEOWNERS = ROOT.join('.github/CODEOWNERS')
 GRADLE_RUNNER = ROOT.join('scripts/run-android-gradle.sh')
@@ -87,6 +89,7 @@ failures << "#{rel(HOSTED_BUILD_PLAN)} is missing" unless HOSTED_BUILD_PLAN.file
 failures << "#{rel(PERMISSION_IDENTITY_PLAN)} is missing" unless PERMISSION_IDENTITY_PLAN.file?
 failures << "#{rel(GRADLE_CHECKSUM_PLAN)} is missing" unless GRADLE_CHECKSUM_PLAN.file?
 failures << "#{rel(MARKER_ANIMATION_PLAN)} is missing" unless MARKER_ANIMATION_PLAN.file?
+failures << "#{rel(LAYOUT_RESOURCE_PLAN)} is missing" unless LAYOUT_RESOURCE_PLAN.file?
 
 if ROOT.join('.travis.yml').exist?
   failures << '.travis.yml is obsolete and must not replace the hosted contract workflow'
@@ -730,6 +733,31 @@ unless makefile_source.include?('scripts/run-android-gradle.sh verifyOkHttpResol
        makefile_source.include?('scripts/run-android-gradle.sh assembleDebug assembleRelease') &&
        makefile_source.match?(/^verify: dependency lint test build$/)
   failures << 'Makefile must verify resolved OkHttp and assemble debug/release APKs in the Android gates'
+end
+
+layout_resource_inputs = {
+  strings_xml: read('app/src/main/res/values/strings.xml'),
+  activity_xml: read('app/src/main/res/layout/activity_main.xml'),
+  action_bar_xml: read('app/src/main/res/layout/action_bar_custom.xml'),
+  makefile_source: makefile_source
+}
+LayoutResourceContract.failures(**layout_resource_inputs).each do |failure|
+  failures << "layout resource contract: #{failure}"
+end
+
+layout_resource_plan = LAYOUT_RESOURCE_PLAN.file? ? LAYOUT_RESOURCE_PLAN.read : ''
+unless layout_resource_plan.include?('Status: Completed') &&
+       layout_resource_plan.include?('seven hostile layout-resource mutations were rejected') &&
+       layout_resource_plan.include?('Android lint reported zero `HardcodedText` and zero `ContentDescription` findings') &&
+       layout_resource_plan.include?('repository and external-directory portable gates passed') &&
+       layout_resource_plan.include?('exact-diff, generated-artifact, and credential-pattern audits passed')
+  failures << "#{rel(LAYOUT_RESOURCE_PLAN)} must record completed layout-resource verification"
+end
+
+changes = ROOT.join('CHANGES.md').read
+unless changes.include?('visible ride-selection copy into string resources') &&
+       changes.include?('descriptions for the pickup search image and action-bar logo')
+  failures << 'CHANGES.md must record the accessible, localizable layout resources'
 end
 
 

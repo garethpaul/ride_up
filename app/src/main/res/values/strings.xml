@@ -1,4 +1,12 @@
 <resources>
     <string name="app_name">RideUp</string>
     <string name="driver_error">Unfortunately all our drivers are busy right now. Please try again.</string>
+    <string name="pickup_location_label">PICKUP LOCATION</string>
+    <string name="current_location_label">Current Location</string>
+    <string name="ride_x_label">Ride X</string>
+    <string name="ride_lux_label">RIDE LUX</string>
+    <string name="ride_big_label">RIDE BIG</string>
+    <string name="confirm_pickup_label">Confirm Pickup</string>
+    <string name="pickup_search_description">Search pickup location</string>
+    <string name="ride_up_logo_description">RideUp logo</string>
 </resources>

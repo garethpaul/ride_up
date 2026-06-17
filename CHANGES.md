@@ -1,5 +1,10 @@
 # Changes
 
+## 2026-06-17
+
+- Moved visible ride-selection copy into string resources and added accessible
+  descriptions for the pickup search image and action-bar logo.
+
 ## 2026-06-16
 
 - Guarded delayed marker population against paused or destroyed activity state.

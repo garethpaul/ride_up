@@ -11,6 +11,7 @@
         android:layout_width="47dp"
         android:layout_height="45dp"
         android:src="@drawable/logo"
+        android:contentDescription="@string/ride_up_logo_description"
         android:layout_gravity="center"
         android:padding="8dp"/>
 

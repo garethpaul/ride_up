@@ -20,7 +20,7 @@
             android:background="@android:color/white">
 
             <TextView
-                android:text="PICKUP LOCATION"
+                android:text="@string/pickup_location_label"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:id="@+id/textView2"
@@ -34,7 +34,7 @@
                 android:layout_marginTop="5dp" />
 
             <TextView
-                android:text="Current Location"
+                android:text="@string/current_location_label"
                 android:layout_width="match_parent"
                 android:layout_height="53dp"
                 android:id="@+id/pickUpTextView"
@@ -50,6 +50,7 @@
                 mapbox:srcCompat="@android:drawable/ic_search_category_default"
                 android:layout_alignParentStart="true"
                 android:id="@+id/imageView"
+                android:contentDescription="@string/pickup_search_description"
                 android:layout_margin="10dp" />
         </RelativeLayout>
 
@@ -70,7 +71,7 @@
             android:layout_centerHorizontal="true">
 
             <Button
-                android:text="Ride X"
+                android:text="@string/ride_x_label"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:id="@+id/ridexBtn"
@@ -80,7 +81,7 @@
                 android:elevation="0dp" />
 
             <Button
-                android:text="RIDE LUX"
+                android:text="@string/ride_lux_label"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:id="@+id/rideluxBtn"
@@ -88,7 +89,7 @@
                 android:clickable="false" />
 
             <Button
-                android:text="RIDE BIG"
+                android:text="@string/ride_big_label"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:id="@+id/ridebigBtn"
@@ -101,7 +102,7 @@
             android:layout_alignParentBottom="true">
 
             <Button
-                android:text="Confirm Pickup"
+                android:text="@string/confirm_pickup_label"
                 android:layout_weight="-1"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"

@@ -25,6 +25,7 @@ test:
 	$(RUBY) "$(ROOT)/scripts/test-android-manifest-contract.rb"
 	$(RUBY) "$(ROOT)/scripts/test-ride-up-guards.rb"
 	$(RUBY) "$(ROOT)/scripts/test-delayed-marker-contract.rb"
+	$(RUBY) "$(ROOT)/scripts/test-layout-resource-contract.rb"
 	@if [ -n "$(ANDROID_SDK)" ] && [ -d "$(ANDROID_SDK)" ]; then \
 		cd "$(ROOT)" && ANDROID_HOME="$(ANDROID_SDK)" ANDROID_SDK_ROOT="$(ANDROID_SDK)" scripts/run-android-gradle.sh test; \
 	else \
