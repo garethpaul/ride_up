@@ -166,6 +166,10 @@ public class MainActivity extends AppCompatActivity {
                     return;
                 }
 
+                if (!markerAnimationLifecycle.canAnimate()) {
+                    return;
+                }
+
                 lat = venue.getLocation().getLat();
                 lng = venue.getLocation().getLng();
 
@@ -174,6 +178,9 @@ public class MainActivity extends AppCompatActivity {
 
                     @Override
                     public void onMapReady(@NonNull final MapboxMap mapboxMap) {
+                        if (!markerAnimationLifecycle.canAnimate()) {
+                            return;
+                        }
                         MainActivity.this.mapboxMap = mapboxMap;
                         mapboxMap.moveCamera(CameraUpdateFactory.newLatLngZoom(new LatLng(lat, lng), 15));
                         mapboxMap.setMyLocationEnabled(true);

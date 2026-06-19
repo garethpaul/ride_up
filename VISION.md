@@ -35,7 +35,8 @@ Priority:
 - Keep unrelated permission-result callbacks forwarded to the superclass
 - Keep PlacePicker and current-place coordinates guarded behind venue locations
 - Keep MapView lifecycle forwarding guarded for missing view instances
-- Keep delayed marker population bound to an active activity lifecycle
+- Keep current-place, map-ready, and delayed marker work bound to an active
+  activity lifecycle
 - Treat support libraries and Gradle versions as legacy
 - Keep the Android modernization plan visible until the SDK 23 baseline is
   replaced in a dedicated compatibility pass

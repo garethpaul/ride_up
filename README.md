@@ -90,6 +90,9 @@ secrets.
   versions.
 - The wrapper verifies the Gradle 4.10.2 all-distribution with the publisher's
   SHA-256 `b7aedd369a26b177147bcb715f8b1fc4fe32b0a6ade0d7fd8ee5ed0c6f731f2c`.
+- The checked-in Gradle wrapper scripts and JAR match the Gradle 4.10.2 tagged
+  wrapper artifacts. The wrapper JAR has SHA-256
+  `f477f0a7223dd6c43391aeb91ffbb15de8f251f1782e847c2270fb7b55c24585`.
 - `app/lint.xml` suppresses only the old lint engine's Gson module-descriptor
   failure and the separately tracked target-SDK expiration. Other findings
   remain visible in the lint report.
@@ -123,8 +126,9 @@ secrets.
   venue-location payloads before reading coordinates.
 - The static checker verifies MapView lifecycle callbacks guard missing map
   instances before forwarding lifecycle events.
-- Delayed marker population checks activity lifecycle state before adding cars
-  to a map that may already be off-screen or destroyed.
+- Current-place, map-ready, and delayed marker callbacks check activity
+  lifecycle state before registering or mutating map work that may already be
+  off-screen or destroyed.
 - The guard behavior harness executes reordered, missing, unknown, duplicate,
   null, misaligned, partial, and complete permission callbacks plus matching
   and unrelated PlacePicker callback codes.

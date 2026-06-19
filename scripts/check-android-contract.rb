@@ -3,6 +3,7 @@
 
 require 'pathname'
 require 'open3'
+require 'digest'
 require_relative 'android-manifest-contract'
 require_relative 'delayed-marker-contract'
 require_relative 'layout-lint-contract'
@@ -30,6 +31,9 @@ CODEOWNERS = ROOT.join('.github/CODEOWNERS')
 GRADLE_RUNNER = ROOT.join('scripts/run-android-gradle.sh')
 LINT_CONFIG = ROOT.join('app/lint.xml')
 WRAPPER_PROPERTIES = ROOT.join('gradle/wrapper/gradle-wrapper.properties')
+WRAPPER_JAR = ROOT.join('gradle/wrapper/gradle-wrapper.jar')
+WRAPPER_UNIX = ROOT.join('gradlew')
+WRAPPER_WINDOWS = ROOT.join('gradlew.bat')
 failures = []
 
 def read(path)
@@ -378,7 +382,7 @@ end
 if DELAYED_MARKER_PLAN.file?
   delayed_marker_plan = DELAYED_MARKER_PLAN.read
   unless delayed_marker_plan.include?('Status: Completed') &&
-         delayed_marker_plan.include?('four delayed-marker mutations were rejected') &&
+         delayed_marker_plan.include?('eight delayed-marker mutations were rejected') &&
          delayed_marker_plan.include?('Repository-root and external-directory `make check` passed') &&
          delayed_marker_plan.include?('generated-artifact and credential-pattern audits passed')
     failures << "#{rel(DELAYED_MARKER_PLAN)} must record completed delayed-marker verification"
@@ -504,6 +508,30 @@ if WRAPPER_PROPERTIES.file?
   end
 else
   failures << "#{rel(WRAPPER_PROPERTIES)} is missing"
+end
+
+if WRAPPER_JAR.file?
+  expected_wrapper_jar_checksum = 'f477f0a7223dd6c43391aeb91ffbb15de8f251f1782e847c2270fb7b55c24585'
+  actual_wrapper_jar_checksum = Digest::SHA256.file(WRAPPER_JAR).hexdigest
+  unless actual_wrapper_jar_checksum == expected_wrapper_jar_checksum
+    failures << "#{rel(WRAPPER_JAR)} must match the official Gradle 4.10.2 wrapper JAR SHA-256 #{expected_wrapper_jar_checksum}"
+  end
+else
+  failures << "#{rel(WRAPPER_JAR)} is missing"
+end
+
+{
+  WRAPPER_UNIX => 'cf139290d3b7334cc99b58ecb6adc549c59ecb8f1f4162b122ad4590ead7585e',
+  WRAPPER_WINDOWS => 'e2be4de6240d7090ebcec955ab713f9aa05fb0252e57d374ef7e7795e6306bdf'
+}.each do |wrapper_script, expected_checksum|
+  if wrapper_script.file?
+    actual_checksum = Digest::SHA256.file(wrapper_script).hexdigest
+    unless actual_checksum == expected_checksum
+      failures << "#{rel(wrapper_script)} must match the official Gradle 4.10.2 wrapper script SHA-256 #{expected_checksum}"
+    end
+  else
+    failures << "#{rel(wrapper_script)} is missing"
+  end
 end
 
 manifest_package = nil
@@ -714,6 +742,10 @@ unless [readme, security, changes].all? { |text| text.include?('b7aedd369a26b177
   failures << 'README.md, SECURITY.md, and CHANGES.md must record the verified Gradle 4.10.2 distribution checksum'
 end
 
+unless [readme, security, changes].all? { |text| text.include?('f477f0a7223dd6c43391aeb91ffbb15de8f251f1782e847c2270fb7b55c24585') }
+  failures << 'README.md, SECURITY.md, and CHANGES.md must record the verified Gradle 4.10.2 wrapper JAR checksum'
+end
+
 modernization_plan = MODERNIZATION_PLAN.file? ? MODERNIZATION_PLAN.read : ''
 unless modernization_plan.include?('Status: Completed') &&
        modernization_plan.include?('make check') &&
@@ -800,6 +832,7 @@ end
 gradle_checksum_plan = GRADLE_CHECKSUM_PLAN.file? ? GRADLE_CHECKSUM_PLAN.read : ''
 unless gradle_checksum_plan.include?('Status: Completed') &&
        gradle_checksum_plan.include?('distributionSha256Sum') &&
+       gradle_checksum_plan.include?('f477f0a7223dd6c43391aeb91ffbb15de8f251f1782e847c2270fb7b55c24585') &&
        gradle_checksum_plan.include?('ruby scripts/check-android-contract.rb') &&
        gradle_checksum_plan.include?('make check') &&
        gradle_checksum_plan.include?('hostile wrapper mutations') &&

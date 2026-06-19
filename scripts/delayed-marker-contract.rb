@@ -4,6 +4,44 @@ module DelayedMarkerContract
   module_function
 
   def failures(source)
+    success_start = source.index('public void success(Venue venue, boolean confident)')
+    success_end = success_start && source.index('@Override', success_start + 1)
+    return ['MainActivity must retain the current-place success callback'] unless success_start && success_end
+
+    success = source[success_start...success_end]
+    success_guard = "if (!markerAnimationLifecycle.canAnimate()) {\n                    return;\n                }"
+    latitude_assignment = 'lat = venue.getLocation().getLat();'
+    longitude_assignment = 'lng = venue.getLocation().getLng();'
+    get_map_async = 'mapView.getMapAsync(new OnMapReadyCallback()'
+    unless success.include?(success_guard) &&
+           success.include?(latitude_assignment) &&
+           success.include?(longitude_assignment) &&
+           success.include?(get_map_async) &&
+           success.index(success_guard) < success.index(latitude_assignment) &&
+           success.index(success_guard) < success.index(longitude_assignment) &&
+           success.index(success_guard) < success.index(get_map_async)
+      return ['Current-place callback must reject inactive lifecycle state before map callback registration']
+    end
+
+    map_ready_start = source.index('public void onMapReady(@NonNull final MapboxMap mapboxMap)')
+    map_ready_end = map_ready_start && source.index('} // End onMapReady', map_ready_start)
+    return ['MainActivity must retain the map-ready callback'] unless map_ready_start && map_ready_end
+
+    map_ready = source[map_ready_start..map_ready_end]
+    guard = "if (!markerAnimationLifecycle.canAnimate()) {\n                            return;\n                        }"
+    map_assignment = 'MainActivity.this.mapboxMap = mapboxMap;'
+    move_camera = 'mapboxMap.moveCamera('
+    enable_location = 'mapboxMap.setMyLocationEnabled(true);'
+    unless map_ready.include?(guard) &&
+           map_ready.include?(map_assignment) &&
+           map_ready.include?(move_camera) &&
+           map_ready.include?(enable_location) &&
+           map_ready.index(guard) < map_ready.index(map_assignment) &&
+           map_ready.index(guard) < map_ready.index(move_camera) &&
+           map_ready.index(guard) < map_ready.index(enable_location)
+      return ['Map-ready callback must reject inactive lifecycle state before map mutation']
+    end
+
     delayed_start = source.index('handler.postDelayed(new Runnable()')
     delayed_end = delayed_start && source.index('}, 500);', delayed_start)
     return ['MainActivity must retain the delayed marker runnable'] unless delayed_start && delayed_end

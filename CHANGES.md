@@ -9,7 +9,8 @@
 
 ## 2026-06-16
 
-- Guarded delayed marker population against paused or destroyed activity state.
+- Guarded stale current-place callbacks, map-ready callbacks, and delayed marker
+  population against paused or destroyed activity state.
 
 ## 2026-06-13
 
@@ -24,7 +25,9 @@
 
 - Pinned the Gradle 4.10.2 all-distribution to the publisher-provided SHA-256
   `b7aedd369a26b177147bcb715f8b1fc4fe32b0a6ade0d7fd8ee5ed0c6f731f2c`
-  and added fail-closed URL, checksum, documentation, and plan contracts.
+  and replaced the checked-in Gradle 2.10 wrapper scripts and JAR with Gradle
+  4.10.2 tagged wrapper artifacts. The wrapper JAR is
+  `f477f0a7223dd6c43391aeb91ffbb15de8f251f1782e847c2270fb7b55c24585`.
 - Restored local and hosted Android compilation with AGP 3.3.2, Gradle 4.10.2,
   build-tools 28.0.3, scoped legacy lint handling, and temporary non-secret
   credential placeholders that are removed after every Gradle invocation.

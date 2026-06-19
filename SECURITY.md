@@ -52,8 +52,8 @@ Helpful reports include:
   location-backed lookup starts.
 - Hosted guard behavior validation executes permission and request-code
   decisions without loading project dependencies or local credentials.
-- Delayed marker population rejects inactive activity lifecycle state before
-  adding simulated cars to the map.
+- Current-place, map-ready, and delayed marker callbacks reject inactive
+  activity lifecycle state before registering or mutating map work.
 
 ## Mobile Privacy Notes
 
@@ -65,8 +65,10 @@ Dependency updates should come from trusted package managers and should keep loc
 
 - The Gradle wrapper pins the 4.10.2 all-distribution to the publisher-provided
   SHA-256 `b7aedd369a26b177147bcb715f8b1fc4fe32b0a6ade0d7fd8ee5ed0c6f731f2c`.
-  This protects the downloaded distribution archive; it does not establish
-  provenance for the checked-in wrapper JAR or application dependencies.
+  The checked-in wrapper scripts and JAR match the Gradle 4.10.2 tagged wrapper
+  artifacts. The wrapper JAR has SHA-256
+  `f477f0a7223dd6c43391aeb91ffbb15de8f251f1782e847c2270fb7b55c24585`.
+  These checks do not establish provenance for application dependencies.
 
 - Gson 2.8.9 overrides PlacePicker's Gson 2.5 dependency to address
   CVE-2022-25647.
