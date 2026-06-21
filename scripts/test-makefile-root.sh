@@ -13,6 +13,7 @@ COMMAND_LOG="$TEMP_ROOT/commands.log"
 BAD_COMMAND_LOG="$TEMP_ROOT/bad-command.log"
 FAKE_SHELL_LOG="$TEMP_ROOT/fake-shell.log"
 mkdir "$CONTROL_DIR" "$CHECKOUT" "$CHECKOUT/scripts" "$CHECKOUT/bin" "$ATTACKER_ROOT"
+CONTROL_DIR=$(CDPATH= cd -- "$CONTROL_DIR" && pwd -P)
 CHECKOUT=$(CDPATH= cd -- "$CHECKOUT" && pwd -P)
 MAKEFILE="$CHECKOUT/Makefile"
 cp "$ROOT_DIR/Makefile" "$MAKEFILE"
@@ -188,14 +189,31 @@ fi
 EARLIER_MAKEFILE="$TEMP_ROOT/earlier.mk"
 printf '%s\n' '# Explicit caller-controlled Makefile.' >"$EARLIER_MAKEFILE"
 rm -f "$COMMAND_LOG"
-if (cd "$CONTROL_DIR" && PATH="$CHECKOUT/bin:$PATH" RIDE_UP_COMMAND_LOG="$COMMAND_LOG" /usr/bin/make --no-print-directory --file "$EARLIER_MAKEFILE" --file "$MAKEFILE" check) >"$TEMP_ROOT/multiple.out" 2>&1; then
-  printf '%s\n' "multiple -f Makefiles unexpectedly passed" >&2
+if (cd "$CONTROL_DIR" && PATH="$CHECKOUT/bin:$PATH" RIDE_UP_COMMAND_LOG="$COMMAND_LOG" /usr/bin/make --no-print-directory --file "$EARLIER_MAKEFILE" --file "$MAKEFILE" check) >"$TEMP_ROOT/earlier-multiple.out" 2>&1; then
+  printf '%s\n' "earlier -f Makefile unexpectedly passed" >&2
   exit 1
 fi
-grep -Fq "repository Makefile path could not be resolved" "$TEMP_ROOT/multiple.out"
+grep -Fq "repository Makefile path could not be resolved" "$TEMP_ROOT/earlier-multiple.out"
 if [ -e "$COMMAND_LOG" ]; then
-  printf '%s\n' "multiple -f Makefiles reached a quality command" >&2
+  printf '%s\n' "earlier -f Makefile reached a quality command" >&2
   exit 1
 fi
 
-printf '%s\n' "Makefile root tests passed: 77 executed target/authority cases, 2 MAKEFILE_LIST rejections, 1 MAKEFILES rejection, and 1 multi-Makefile rejection"
+LATER_MAKEFILE="$TEMP_ROOT/later.mk"
+LATER_MARKER="$TEMP_ROOT/later-marker"
+cat >"$LATER_MAKEFILE" <<EOF
+build:
+	@printf owned > "$LATER_MARKER"
+EOF
+rm -f "$COMMAND_LOG" "$LATER_MARKER"
+if (cd "$CONTROL_DIR" && PATH="$CHECKOUT/bin:$PATH" RIDE_UP_COMMAND_LOG="$COMMAND_LOG" /usr/bin/make --no-print-directory --file "$MAKEFILE" --file "$LATER_MAKEFILE" build) >"$TEMP_ROOT/later-multiple.out" 2>&1; then
+  printf '%s\n' "later -f Makefile unexpectedly passed" >&2
+  exit 1
+fi
+grep -Fq "repository Makefile must be loaded alone" "$TEMP_ROOT/later-multiple.out"
+if [ -e "$COMMAND_LOG" ] || [ -e "$LATER_MARKER" ]; then
+  printf '%s\n' "later -f Makefile reached a quality or replacement command" >&2
+  exit 1
+fi
+
+printf '%s\n' "Makefile root tests passed: 77 executed target/authority cases, 2 MAKEFILE_LIST rejections, 1 MAKEFILES rejection, and 2 multi-Makefile rejections"

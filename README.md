@@ -71,7 +71,8 @@ secrets.
 
 - Make verification derives one canonical checked-in root, freezes Ruby and
   shell authority, and rejects direct derived-SDK, preload, or ambiguous
-  Makefile overrides. See `docs/plans/2026-06-21-safe-make-authority.md`.
+  Makefile overrides before or after the repository Makefile. See
+  `docs/plans/2026-06-21-safe-make-authority.md`.
 - `./gradlew test` or Android Studio's test runner when the SDK is configured
 - `make test` runs both the static contracts and executable Java guard behavior
   tests without requiring an Android SDK.

@@ -5,6 +5,8 @@
 - Made every Make quality gate safe for spaced and shell-sensitive checkout
   paths and rejected caller-controlled root, Ruby, derived-SDK, shell, preload,
   and Makefile-list authority without changing Android behavior or toolchains.
+- Added a deferred final-file-set guard so a later `-f` Makefile cannot replace
+  a public verification target after the repository Makefile is parsed.
 
 ## 2026-06-17
 
