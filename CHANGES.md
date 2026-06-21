@@ -1,5 +1,11 @@
 # Changes
 
+## 2026-06-21
+
+- Made every Make quality gate safe for spaced and shell-sensitive checkout
+  paths and rejected caller-controlled root, Ruby, derived-SDK, shell, preload,
+  and Makefile-list authority without changing Android behavior or toolchains.
+
 ## 2026-06-17
 
 - Removed invalid and redundant layout attributes and enforced accessible,

@@ -30,7 +30,7 @@ module LayoutResourceContract
     'ride_up_logo_description' => 'RideUp logo'
   }.freeze
 
-  TEST_COMMAND = '$(RUBY) "$(ROOT)/scripts/test-layout-resource-contract.rb"'
+  TEST_COMMAND = '$(RUBY) "$$ROOT/scripts/test-layout-resource-contract.rb"'
 
   def failures(strings_xml:, activity_xml:, action_bar_xml:, makefile_source:)
     documents = {

@@ -22,6 +22,7 @@ HOSTED_BUILD_PLAN = DOCS_PLANS.join('2026-06-12-hosted-android-build.md')
 PERMISSION_IDENTITY_PLAN = DOCS_PLANS.join('2026-06-12-location-permission-identity.md')
 GRADLE_CHECKSUM_PLAN = DOCS_PLANS.join('2026-06-12-gradle-distribution-checksum.md')
 MAKE_ROOT_PLAN = DOCS_PLANS.join('2026-06-14-make-root-override-protection.md')
+SAFE_MAKE_AUTHORITY_PLAN = DOCS_PLANS.join('2026-06-21-safe-make-authority.md')
 MARKER_ANIMATION_PLAN = DOCS_PLANS.join('2026-06-14-marker-animation-lifecycle.md')
 DELAYED_MARKER_PLAN = DOCS_PLANS.join('2026-06-16-delayed-marker-population-lifecycle.md')
 LAYOUT_RESOURCE_PLAN = DOCS_PLANS.join('2026-06-17-accessible-localized-layout-resources.md')
@@ -97,6 +98,7 @@ failures << "#{rel(GRADLE_CHECKSUM_PLAN)} is missing" unless GRADLE_CHECKSUM_PLA
 failures << "#{rel(LAYOUT_LINT_PLAN)} is missing" unless LAYOUT_LINT_PLAN.file?
 failures << "#{rel(MARKER_ANIMATION_PLAN)} is missing" unless MARKER_ANIMATION_PLAN.file?
 failures << "#{rel(LAYOUT_RESOURCE_PLAN)} is missing" unless LAYOUT_RESOURCE_PLAN.file?
+failures << "#{rel(SAFE_MAKE_AUTHORITY_PLAN)} is missing" unless SAFE_MAKE_AUTHORITY_PLAN.file?
 
 if ROOT.join('.travis.yml').exist?
   failures << '.travis.yml is obsolete and must not replace the hosted contract workflow'
@@ -600,17 +602,28 @@ else
 end
 
 makefile = read('Makefile')
-root_declaration = 'override ROOT := $(abspath $(dir $(lastword $(MAKEFILE_LIST))))'
-unless makefile.lines.first&.chomp == root_declaration &&
-       makefile.scan(/^override ROOT :=/).length == 1 &&
-       makefile.scan(/^ROOT\s*[:?+]?=/).empty?
-  failures << 'Makefile must define exactly one protected repository-derived ROOT declaration first'
+[
+  'override SHELL := /bin/sh',
+  'override .SHELLFLAGS := -c',
+  'override RUBY := ruby',
+  'ifneq ($(strip $(MAKEFILES)),)',
+  '$(error MAKEFILES must be empty; repository verification requires this Makefile to be loaded alone)',
+  'ifneq ($(origin MAKEFILE_LIST),file)',
+  '$(error MAKEFILE_LIST must not be overridden)',
+  'override ROOT := $(shell path=',
+  '[ -f "$$path" ] || exit 1',
+  'export ROOT',
+  '$(error repository Makefile path could not be resolved)',
+  'override ANDROID_SDK := $(if $(ANDROID_HOME),$(ANDROID_HOME),$(ANDROID_SDK_ROOT))',
+  'export ANDROID_SDK',
+  '"$$ROOT/scripts/test-makefile-root.sh"'
+].each do |fragment|
+  failures << "Makefile must preserve authority contract #{fragment.inspect}" unless makefile.include?(fragment)
 end
-unless makefile.include?('$(RUBY) "$(ROOT)/scripts/test-ride-up-guards.rb"')
+unless makefile.include?('$(RUBY) "$$ROOT/scripts/test-ride-up-guards.rb"')
   failures << 'Makefile test target must run the pure Java guard behavior harness from ROOT'
 end
 [
-  'ANDROID_SDK := $(if $(ANDROID_HOME),$(ANDROID_HOME),$(ANDROID_SDK_ROOT))',
   "test:\n",
   'scripts/run-android-gradle.sh lint',
   'scripts/run-android-gradle.sh test',
@@ -766,7 +779,7 @@ end
 makefile_source = ROOT.join('Makefile').read
 unless makefile_source.include?('scripts/run-android-gradle.sh verifyOkHttpResolution') &&
        makefile_source.include?('scripts/run-android-gradle.sh assembleDebug assembleRelease') &&
-       makefile_source.match?(/^verify: dependency lint test build$/)
+       makefile_source.match?(/^verify: root-test dependency lint test build$/)
   failures << 'Makefile must verify resolved OkHttp and assemble debug/release APKs in the Android gates'
 end
 
@@ -850,6 +863,15 @@ unless make_root_plan.include?('Status: Completed') &&
        make_root_plan.include?('secret screening') &&
        make_root_plan.include?('generated-artifact')
   failures << "#{rel(MAKE_ROOT_PLAN)} must record completed status and actual root-override verification"
+end
+
+safe_make_authority_plan = SAFE_MAKE_AUTHORITY_PLAN.file? ? SAFE_MAKE_AUTHORITY_PLAN.read : ''
+unless safe_make_authority_plan.include?('Status: Completed') &&
+       safe_make_authority_plan.include?('77 executed target, root, shell, Ruby, and derived-SDK authority cases') &&
+       safe_make_authority_plan.include?('Both `MAKEFILE_LIST` override channels') &&
+       safe_make_authority_plan.include?('`MAKEFILES` preload') &&
+       safe_make_authority_plan.include?('ambiguous multiple-Makefile invocation failed closed')
+  failures << "#{rel(SAFE_MAKE_AUTHORITY_PLAN)} must record completed safe Make authority evidence"
 end
 
 if failures.empty?
