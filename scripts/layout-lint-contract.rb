@@ -5,7 +5,7 @@ require 'rexml/document'
 module LayoutLintContract
   module_function
 
-  TEST_COMMAND = '$(RUBY) "$(ROOT)/scripts/test-layout-lint-contract.rb"'
+  TEST_COMMAND = '$(RUBY) "$$ROOT/scripts/test-layout-lint-contract.rb"'
 
   def failures(activity_xml:, alert_xml:, makefile_source:)
     activity = parse(activity_xml, 'activity_main.xml')
