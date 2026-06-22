@@ -10,15 +10,12 @@ module DelayedMarkerContract
 
     success = source[success_start...success_end]
     success_guard = "if (!markerAnimationLifecycle.canAnimate()) {\n                    return;\n                }"
-    latitude_assignment = 'lat = venue.getLocation().getLat();'
-    longitude_assignment = 'lng = venue.getLocation().getLng();'
+    state_update = 'pickupMapState.updateCurrentPlace('
     get_map_async = 'mapView.getMapAsync(new OnMapReadyCallback()'
     unless success.include?(success_guard) &&
-           success.include?(latitude_assignment) &&
-           success.include?(longitude_assignment) &&
+           success.include?(state_update) &&
            success.include?(get_map_async) &&
-           success.index(success_guard) < success.index(latitude_assignment) &&
-           success.index(success_guard) < success.index(longitude_assignment) &&
+           success.index(success_guard) < success.index(state_update) &&
            success.index(success_guard) < success.index(get_map_async)
       return ['Current-place callback must reject inactive lifecycle state before map callback registration']
     end
@@ -30,14 +27,14 @@ module DelayedMarkerContract
     map_ready = source[map_ready_start..map_ready_end]
     guard = "if (!markerAnimationLifecycle.canAnimate()) {\n                            return;\n                        }"
     map_assignment = 'MainActivity.this.mapboxMap = mapboxMap;'
-    move_camera = 'mapboxMap.moveCamera('
+    publish_location = 'publishMapLocation();'
     enable_location = 'mapboxMap.setMyLocationEnabled(true);'
     unless map_ready.include?(guard) &&
            map_ready.include?(map_assignment) &&
-           map_ready.include?(move_camera) &&
+           map_ready.include?(publish_location) &&
            map_ready.include?(enable_location) &&
            map_ready.index(guard) < map_ready.index(map_assignment) &&
-           map_ready.index(guard) < map_ready.index(move_camera) &&
+           map_ready.index(map_assignment) < map_ready.index(publish_location) &&
            map_ready.index(guard) < map_ready.index(enable_location)
       return ['Map-ready callback must reject inactive lifecycle state before map mutation']
     end

@@ -9,13 +9,17 @@ root = Pathname.new(__dir__).parent.expand_path
 sources = [
   root.join('app/src/main/java/com/foursquare/rideup/RideUpGuards.java'),
   root.join('app/src/main/java/com/foursquare/rideup/MarkerAnimationLifecycle.java'),
+  root.join('app/src/main/java/com/foursquare/rideup/PickupMapState.java'),
+  root.join('app/src/main/java/com/foursquare/rideup/PickupMapPublicationController.java'),
   root.join('scripts/java/com/foursquare/rideup/RideUpGuardsContractTest.java'),
-  root.join('scripts/java/com/foursquare/rideup/MarkerAnimationLifecycleContractTest.java')
+  root.join('scripts/java/com/foursquare/rideup/MarkerAnimationLifecycleContractTest.java'),
+  root.join('scripts/java/com/foursquare/rideup/PickupMapStateContractTest.java'),
+  root.join('scripts/java/com/foursquare/rideup/PickupMapPublicationControllerContractTest.java')
 ]
 
 Dir.mktmpdir('ride-up-guards') do |output|
   compile_output, compile_status = Open3.capture2e(
-    'javac', '-source', '8', '-target', '8', '-d', output, *sources.map(&:to_s)
+    'javac', '-source', '7', '-target', '7', '-d', output, *sources.map(&:to_s)
   )
   abort compile_output unless compile_status.success?
 
@@ -32,4 +36,19 @@ Dir.mktmpdir('ride-up-guards') do |output|
   abort lifecycle_output unless lifecycle_status.success?
 
   print lifecycle_output
+
+  state_output, state_status = Open3.capture2e(
+    'java', '-cp', output, 'com.foursquare.rideup.PickupMapStateContractTest'
+  )
+  abort state_output unless state_status.success?
+
+  print state_output
+
+  controller_output, controller_status = Open3.capture2e(
+    'java', '-cp', output,
+    'com.foursquare.rideup.PickupMapPublicationControllerContractTest'
+  )
+  abort controller_output unless controller_status.success?
+
+  print controller_output
 end
