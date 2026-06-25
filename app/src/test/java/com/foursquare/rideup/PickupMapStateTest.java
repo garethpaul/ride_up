@@ -40,6 +40,17 @@ public class PickupMapStateTest {
     }
 
     @Test
+    public void pickupSelectionRemainsObservableAfterPublication() {
+        PickupMapState state = new PickupMapState();
+        assertFalse(state.hasPickup());
+
+        state.selectPickup(37.2, -122.2);
+        assertTrue(state.hasPickup());
+        assertPickup(state.publication(true, true), 37.2, -122.2);
+        assertTrue(state.hasPickup());
+    }
+
+    @Test
     public void inactivePublicationIsDeferred() {
         PickupMapState state = new PickupMapState();
         state.selectPickup(37.2, -122.2);

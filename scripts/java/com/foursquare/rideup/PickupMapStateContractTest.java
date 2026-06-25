@@ -15,6 +15,7 @@ public final class PickupMapStateContractTest {
         deferredPublicationRemainsPendingUntilActiveAndReady();
         multipleSelectionsPublishEachLatestRevisionOnce();
         staleCurrentPlaceDoesNotDirtyPublishedPickup();
+        pickupSelectionRemainsObservableAfterPublication();
 
         System.out.println("Pickup map state tests passed.");
     }
@@ -117,6 +118,16 @@ public final class PickupMapStateContractTest {
         state.updateCurrentPlace(37.9, -122.9);
         expect(state.publication(true, true) == null,
                 "late current place must not republish an explicit pickup");
+    }
+
+    private static void pickupSelectionRemainsObservableAfterPublication() {
+        PickupMapState state = new PickupMapState();
+        expect(!state.hasPickup(), "new state must not report a pickup");
+
+        state.selectPickup(37.2, -122.2);
+        expect(state.hasPickup(), "selected pickup must be observable");
+        expectPickup(state.publication(true, true), 37.2, -122.2);
+        expect(state.hasPickup(), "published pickup must remain observable");
     }
 
     private static void expectPickup(

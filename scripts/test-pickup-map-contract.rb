@@ -74,12 +74,28 @@ static_mutations = {
     controller_source
   ],
   'missing map-ready publication' => [
-    main_activity.sub('                        publishMapLocation();', ''),
+    main_activity.sub(
+      "                MainActivity.this.mapboxMap = mapboxMap;\n" \
+      "                publishMapLocation();\n",
+      "                MainActivity.this.mapboxMap = mapboxMap;\n"
+    ),
     state_source,
     controller_source
   ],
   'missing resume publication' => [
-    main_activity.sub(/(mapView\.onResume\(\);\s*\})\s*publishMapLocation\(\);/m, '\\1'),
+    main_activity.sub(
+      "        requestMapReady();\n        publishMapLocation();\n" \
+      "        for (MarkerView marker : new ArrayList<>(carMarkers)) {\n",
+      "        requestMapReady();\n" \
+      "        for (MarkerView marker : new ArrayList<>(carMarkers)) {\n"
+    ),
+    state_source,
+    controller_source
+  ],
+  'missing resume map readiness request' => [
+    main_activity.sub(
+      /(mapView\.onResume\(\);\s*\})\s*requestMapReady\(\);/m, '\\1'
+    ),
     state_source,
     controller_source
   ],
@@ -101,6 +117,11 @@ static_mutations = {
   'missing pickup revision' => [
     main_activity,
     state_source.sub('pendingRevision = ++revision;', '').sub('pendingRevision = ++revision;', ''),
+    controller_source
+  ],
+  'missing pickup observation' => [
+    main_activity,
+    state_source.sub(/\s*boolean hasPickup\(\) \{.*?\n\s*\}/m, ''),
     controller_source
   ],
   'missing consumed revision check' => [

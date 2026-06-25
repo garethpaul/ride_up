@@ -51,6 +51,7 @@ module PickupMapContract
     state = uncomment(state_source)
     controller = uncomment(controller_source)
     picker_body = method_body(main_activity, 'protected void onActivityResult(')
+    request_map_body = method_body(main_activity, 'private void requestMapReady()')
     map_ready_body = method_body(main_activity, 'public void onMapReady(')
     resume_body = method_body(main_activity, 'protected void onResume()')
     publish_body = method_body(main_activity, 'private void publishMapLocation()')
@@ -71,10 +72,15 @@ module PickupMapContract
       main.include?('pickupMapState.updateCurrentPlace(')
     failures << 'picker must save pickup before publication' unless
       ordered?(picker_body, 'pickupMapState.selectPickup(', 'publishMapLocation();')
+    failures << 'map readiness must be re-requestable while no map is retained' unless
+      request_map_body&.include?('mapView == null || mapboxMap != null') &&
+      request_map_body&.include?('mapView.getMapAsync(new OnMapReadyCallback()')
     failures << 'map-ready callback must publish saved state' unless
       ordered?(map_ready_body, 'MainActivity.this.mapboxMap = mapboxMap;', 'publishMapLocation();')
     failures << 'resume must attempt deferred publication' unless
       ordered?(resume_body, 'markerAnimationLifecycle.resume();', 'publishMapLocation();')
+    failures << 'resume must re-request map readiness before deferred publication' unless
+      ordered?(resume_body, 'requestMapReady();', 'publishMapLocation();')
     failures << 'production publication must execute the controller' unless
       live_call?(publish_body, 'pickupMapPublicationController.publishIfPending(')
     failures << 'production publication must pass readiness and activity' unless
@@ -98,6 +104,8 @@ module PickupMapContract
       update_body&.include?('pendingRevision = ++revision;')
     failures << 'pickup must create a pending revision' unless
       select_body&.include?('pendingRevision = ++revision;')
+    failures << 'state must expose whether a pickup was selected' unless
+      state.include?('boolean hasPickup()')
     failures << 'publication must require activity, readiness, and a new revision' unless
       state_publish_body&.match?(/!mapReady \|\| !active \|\| pendingRevision == publishedRevision/)
     failures << 'successful publication must consume the exact pending revision' unless

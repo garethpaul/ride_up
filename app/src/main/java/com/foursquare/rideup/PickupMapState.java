@@ -29,6 +29,10 @@ final class PickupMapState {
         pendingRevision = ++revision;
     }
 
+    boolean hasPickup() {
+        return hasPickup;
+    }
+
     Publication publication(boolean mapReady, boolean active) {
         if (!mapReady || !active || pendingRevision == publishedRevision) {
             return null;

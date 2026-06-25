@@ -173,37 +173,46 @@ public class MainActivity extends AppCompatActivity {
 
                 pickupMapState.updateCurrentPlace(
                         venue.getLocation().getLat(), venue.getLocation().getLng());
-
-
-                mapView.getMapAsync(new OnMapReadyCallback() {
-
-                    @Override
-                    public void onMapReady(@NonNull final MapboxMap mapboxMap) {
-                        if (!markerAnimationLifecycle.canAnimate()) {
-                            return;
-                        }
-                        MainActivity.this.mapboxMap = mapboxMap;
-                        publishMapLocation();
-                        mapboxMap.setMyLocationEnabled(true);
-                        final Handler handler = new Handler();
-                        handler.postDelayed(new Runnable() {
-                            @Override
-                            public void run() {
-                                if (!markerAnimationLifecycle.canAnimate()) {
-                                    return;
-                                }
-                                for (int i = 0; i < 10; i++) {
-                                    addRandomCar();
-                                }
-                            }
-                        }, 500);
-
-                    } // End onMapReady
-                });
+                requestMapReady();
+                publishMapLocation();
             }
             @Override
             public void fail() {
             }
+        });
+    }
+
+    private void requestMapReady() {
+        if (mapView == null || mapboxMap != null) {
+            return;
+        }
+
+        mapView.getMapAsync(new OnMapReadyCallback() {
+            @Override
+            public void onMapReady(@NonNull final MapboxMap mapboxMap) {
+                if (!markerAnimationLifecycle.canAnimate()) {
+                    return;
+                }
+                MainActivity.this.mapboxMap = mapboxMap;
+                publishMapLocation();
+                mapboxMap.setMyLocationEnabled(true);
+                if (pickupMapState.hasPickup()) {
+                    return;
+                }
+                final Handler handler = new Handler();
+                handler.postDelayed(new Runnable() {
+                    @Override
+                    public void run() {
+                        if (!markerAnimationLifecycle.canAnimate() || pickupMapState.hasPickup()) {
+                            return;
+                        }
+                        for (int i = 0; i < 10; i++) {
+                            addRandomCar();
+                        }
+                    }
+                }, 500);
+
+            } // End onMapReady
         });
     }
 
@@ -280,6 +289,7 @@ public class MainActivity extends AppCompatActivity {
         if (mapView != null) {
             mapView.onResume();
         }
+        requestMapReady();
         publishMapLocation();
         for (MarkerView marker : new ArrayList<>(carMarkers)) {
             randomlyMoveMarker(marker);
