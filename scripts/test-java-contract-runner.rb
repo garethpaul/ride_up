@@ -5,9 +5,8 @@ require 'pathname'
 require 'tmpdir'
 require_relative 'java-contract-runner'
 
-java_home = ENV.fetch('JAVA_HOME')
-javac = ENV.fetch('JAVAC', File.join(java_home, 'bin/javac'))
-java = ENV.fetch('JAVA', File.join(java_home, 'bin/java'))
+javac = JavaContractRunner.tool('JAVAC', 'javac')
+java = JavaContractRunner.tool('JAVA', 'java')
 
 def expect_harness_failure(message)
   yield

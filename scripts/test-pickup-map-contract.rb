@@ -19,9 +19,8 @@ state_test_path = root.join(
 controller_test_path = root.join(
   'scripts/java/com/foursquare/rideup/PickupMapPublicationControllerContractTest.java'
 )
-java_home = ENV.fetch('JAVA_HOME')
-javac = ENV.fetch('JAVAC', File.join(java_home, 'bin/javac'))
-java = ENV.fetch('JAVA', File.join(java_home, 'bin/java'))
+javac = JavaContractRunner.tool('JAVAC', 'javac')
+java = JavaContractRunner.tool('JAVA', 'java')
 main_activity = main_path.read
 state_source = state_path.read
 controller_source = controller_path.read

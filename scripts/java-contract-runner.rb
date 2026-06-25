@@ -9,6 +9,16 @@ module JavaContractRunner
 
   module_function
 
+  def tool(environment_name, executable)
+    override = ENV[environment_name]
+    return override unless override.nil? || override.empty?
+
+    java_home = ENV['JAVA_HOME']
+    return executable if java_home.nil? || java_home.empty?
+
+    File.join(java_home, 'bin', executable)
+  end
+
   def compile!(javac, sources, output, context:)
     FileUtils.mkdir_p(output)
     command_output, status = capture(

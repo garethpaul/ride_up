@@ -42,6 +42,7 @@ lint:
 
 test:
 	$(RUBY) "$$ROOT/scripts/test-android-manifest-contract.rb"
+	$(RUBY) "$$ROOT/scripts/test-java-toolchain-resolution.rb"
 	$(RUBY) "$$ROOT/scripts/test-java-contract-runner.rb"
 	$(RUBY) "$$ROOT/scripts/test-ride-up-guards.rb"
 	$(RUBY) "$$ROOT/scripts/test-pickup-map-contract.rb"
