@@ -61,8 +61,6 @@ public class MainActivity extends AppCompatActivity {
 
     private MapView mapView;
     private MapboxMap mapboxMap;
-    private float lat;
-    private float lng;
     private LocationServices locationServices;
     private static final int PERMISSIONS_LOCATION = 0;
     private static final int PLACE_PICKER_REQUEST = 9001;
@@ -72,6 +70,9 @@ public class MainActivity extends AppCompatActivity {
     };
     private final MarkerAnimationLifecycle markerAnimationLifecycle =
             new MarkerAnimationLifecycle();
+    private final PickupMapState pickupMapState = new PickupMapState();
+    private final PickupMapPublicationController pickupMapPublicationController =
+            new PickupMapPublicationController(pickupMapState);
     private final List<MarkerView> carMarkers = new ArrayList<>();
     private final List<ValueAnimator> carAnimators = new ArrayList<>();
 
@@ -170,39 +171,35 @@ public class MainActivity extends AppCompatActivity {
                     return;
                 }
 
-                lat = venue.getLocation().getLat();
-                lng = venue.getLocation().getLng();
-
-
-                mapView.getMapAsync(new OnMapReadyCallback() {
-
-                    @Override
-                    public void onMapReady(@NonNull final MapboxMap mapboxMap) {
-                        if (!markerAnimationLifecycle.canAnimate()) {
-                            return;
-                        }
-                        MainActivity.this.mapboxMap = mapboxMap;
-                        mapboxMap.moveCamera(CameraUpdateFactory.newLatLngZoom(new LatLng(lat, lng), 15));
-                        mapboxMap.setMyLocationEnabled(true);
-                        final Handler handler = new Handler();
-                        handler.postDelayed(new Runnable() {
-                            @Override
-                            public void run() {
-                                if (!markerAnimationLifecycle.canAnimate()) {
-                                    return;
-                                }
-                                for (int i = 0; i < 10; i++) {
-                                    addRandomCar();
-                                }
-                            }
-                        }, 500);
-
-                    } // End onMapReady
-                });
+                pickupMapState.updateCurrentPlace(
+                        venue.getLocation().getLat(), venue.getLocation().getLng());
+                requestMapReady();
+                publishMapLocation();
             }
             @Override
             public void fail() {
             }
+        });
+    }
+
+    private void requestMapReady() {
+        if (mapView == null || mapboxMap != null) {
+            return;
+        }
+
+        mapView.getMapAsync(new OnMapReadyCallback() {
+            @Override
+            public void onMapReady(@NonNull final MapboxMap mapboxMap) {
+                if (!markerAnimationLifecycle.canAnimate()) {
+                    return;
+                }
+                MainActivity.this.mapboxMap = mapboxMap;
+                publishMapLocation();
+                if (locationServices.areLocationPermissionsGranted()) {
+                    mapboxMap.setMyLocationEnabled(true);
+                }
+
+            } // End onMapReady
         });
     }
 
@@ -232,13 +229,51 @@ public class MainActivity extends AppCompatActivity {
         }
 
         pickupLocation.setText(place.getName());
-        if (mapboxMap != null) {
+        pickupMapState.selectPickup(
+                place.getLocation().getLat(), place.getLocation().getLng());
+        publishMapLocation();
+    }
+
+    private void publishMapLocation() {
+        pickupMapPublicationController.publishIfPending(
+                mapboxMap != null,
+                markerAnimationLifecycle.canAnimate(),
+                new PickupMapPublicationController.Publisher() {
+                    @Override
+                    public void publish(PickupMapState.Publication publication) {
+                        applyMapPublication(publication);
+                    }
+                });
+    }
+
+    private void applyMapPublication(PickupMapState.Publication publication) {
+        LatLng location = new LatLng(
+                publication.getLatitude(), publication.getLongitude());
+        mapboxMap.moveCamera(CameraUpdateFactory.newLatLngZoom(location, 15));
+        if (publication.isPickup()) {
             clearCarMarkers();
             mapboxMap.clear();
             mapboxMap.addMarker(new MarkerViewOptions()
-                    .position(new LatLng(place.getLocation().getLat(), place.getLocation().getLng()))
+                    .position(location)
                     .title("Pick Up Location"));
+            return;
         }
+        scheduleCarPopulation();
+    }
+
+    private void scheduleCarPopulation() {
+        final Handler handler = new Handler();
+        handler.postDelayed(new Runnable() {
+            @Override
+            public void run() {
+                if (!markerAnimationLifecycle.canAnimate() || pickupMapState.hasPickup()) {
+                    return;
+                }
+                for (int i = 0; i < 10; i++) {
+                    addRandomCar();
+                }
+            }
+        }, 500);
     }
 
 
@@ -258,6 +293,8 @@ public class MainActivity extends AppCompatActivity {
         if (mapView != null) {
             mapView.onResume();
         }
+        requestMapReady();
+        publishMapLocation();
         for (MarkerView marker : new ArrayList<>(carMarkers)) {
             randomlyMoveMarker(marker);
         }

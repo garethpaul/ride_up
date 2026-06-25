@@ -1,5 +1,15 @@
 # Changes
 
+## 2026-06-25
+
+- Preserved explicit pickup selections until the map and activity are ready,
+  re-requested map readiness after paused callbacks, and prevented late
+  current-place callbacks, repeated resumes, or delayed car population from
+  replacing or obscuring the selected pickup without bypassing location
+  permission checks.
+- Kept the SDK-free Java contract suite compatible with JDK installations on
+  `PATH`, while continuing to honor `JAVA_HOME`, `JAVAC`, and `JAVA` overrides.
+
 ## 2026-06-21
 
 - Made every Make quality gate safe for spaced and shell-sensitive checkout

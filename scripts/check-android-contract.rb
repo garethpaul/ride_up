@@ -218,7 +218,9 @@ if file?(main_activity)
     failures << "#{main_activity} must ignore PlacePicker results without a Venue location"
   end
 
-  unless source.include?('if (mapboxMap != null)')
+  unless source.include?('pickupMapPublicationController.publishIfPending(') &&
+         source.include?('mapboxMap != null') &&
+         source.include?('markerAnimationLifecycle.canAnimate()')
     failures << "#{main_activity} must guard map updates until Mapbox is ready"
   end
 
