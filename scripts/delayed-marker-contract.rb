@@ -32,21 +32,24 @@ module DelayedMarkerContract
     map_assignment = 'MainActivity.this.mapboxMap = mapboxMap;'
     publish_location = 'publishMapLocation();'
     enable_location = 'mapboxMap.setMyLocationEnabled(true);'
+    permission_guard = /if \(locationServices\.areLocationPermissionsGranted\(\)\) \{\s*mapboxMap\.setMyLocationEnabled\(true\);\s*\}/
     pickup_guard = /if \(pickupMapState\.hasPickup\(\)\) \{\s*return;\s*\}/
     delayed_start = map_ready.index('handler.postDelayed(new Runnable()')
     schedule_call = map_ready.index('scheduleCarPopulation();')
     guard_start = map_ready.index(guard)
     pickup_guard_start = map_ready.index(pickup_guard)
+    permission_guard_start = map_ready.index(permission_guard)
     unless guard_start &&
            map_ready.include?(map_assignment) &&
            map_ready.include?(publish_location) &&
            map_ready.include?(enable_location) &&
+           permission_guard_start &&
            pickup_guard_start.nil? &&
            delayed_start.nil? &&
            schedule_call.nil? &&
            guard_start < map_ready.index(map_assignment) &&
            map_ready.index(map_assignment) < map_ready.index(publish_location) &&
-           guard_start < map_ready.index(enable_location)
+           guard_start < permission_guard_start
       return ['Map-ready callback must reject inactive lifecycle state before map mutation']
     end
 

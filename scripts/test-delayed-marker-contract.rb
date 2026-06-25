@@ -13,7 +13,7 @@ publish_location = "                publishMapLocation();\n"
 map_ready_guard = "                if (!markerAnimationLifecycle.canAnimate()) {\n                    return;\n                }\n"
 map_ready_assignment = "                MainActivity.this.mapboxMap = mapboxMap;\n"
 map_ready_publication = "                publishMapLocation();\n"
-enable_location = "                mapboxMap.setMyLocationEnabled(true);\n"
+permission_guard = "                if (locationServices.areLocationPermissionsGranted()) {\n                    mapboxMap.setMyLocationEnabled(true);\n                }\n"
 pickup_return = "            mapboxMap.addMarker(new MarkerViewOptions()\n                    .position(location)\n                    .title(\"Pick Up Location\"));\n            return;\n"
 schedule_call = "        scheduleCarPopulation();\n"
 guard = "                if (!markerAnimationLifecycle.canAnimate() || pickupMapState.hasPickup()) {\n                    return;\n                }\n"
@@ -42,7 +42,10 @@ mutations = {
     map_ready_publication + map_ready_assignment
   ),
   'map-ready schedules before location publication' => baseline.sub(
-    enable_location, enable_location + "                scheduleCarPopulation();\n"
+    permission_guard, permission_guard + "                scheduleCarPopulation();\n"
+  ),
+  'location layer enabled without permission guard' => baseline.sub(
+    permission_guard, "                mapboxMap.setMyLocationEnabled(true);\n"
   ),
   'pickup publication falls through to car scheduling' => baseline.sub(
     pickup_return, pickup_return.sub("            return;\n", '')

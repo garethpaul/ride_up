@@ -195,7 +195,9 @@ public class MainActivity extends AppCompatActivity {
                 }
                 MainActivity.this.mapboxMap = mapboxMap;
                 publishMapLocation();
-                mapboxMap.setMyLocationEnabled(true);
+                if (locationServices.areLocationPermissionsGranted()) {
+                    mapboxMap.setMyLocationEnabled(true);
+                }
 
             } // End onMapReady
         });
