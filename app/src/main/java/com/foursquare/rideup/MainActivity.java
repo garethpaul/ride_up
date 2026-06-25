@@ -196,21 +196,6 @@ public class MainActivity extends AppCompatActivity {
                 MainActivity.this.mapboxMap = mapboxMap;
                 publishMapLocation();
                 mapboxMap.setMyLocationEnabled(true);
-                if (pickupMapState.hasPickup()) {
-                    return;
-                }
-                final Handler handler = new Handler();
-                handler.postDelayed(new Runnable() {
-                    @Override
-                    public void run() {
-                        if (!markerAnimationLifecycle.canAnimate() || pickupMapState.hasPickup()) {
-                            return;
-                        }
-                        for (int i = 0; i < 10; i++) {
-                            addRandomCar();
-                        }
-                    }
-                }, 500);
 
             } // End onMapReady
         });
@@ -269,7 +254,24 @@ public class MainActivity extends AppCompatActivity {
             mapboxMap.addMarker(new MarkerViewOptions()
                     .position(location)
                     .title("Pick Up Location"));
+            return;
         }
+        scheduleCarPopulation();
+    }
+
+    private void scheduleCarPopulation() {
+        final Handler handler = new Handler();
+        handler.postDelayed(new Runnable() {
+            @Override
+            public void run() {
+                if (!markerAnimationLifecycle.canAnimate() || pickupMapState.hasPickup()) {
+                    return;
+                }
+                for (int i = 0; i < 10; i++) {
+                    addRandomCar();
+                }
+            }
+        }, 500);
     }
 
 

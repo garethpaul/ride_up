@@ -94,6 +94,8 @@ module PickupMapContract
       apply_body&.include?('.position(location)')
     failures << 'pickup publication must clear stale car markers' unless
       apply_body&.match?(/if \(publication\.isPickup\(\)\) \{\s*clearCarMarkers\(\);\s*mapboxMap\.clear\(\);/m)
+    failures << 'pickup publication must not schedule car population' unless
+      apply_body&.match?(/if \(publication\.isPickup\(\)\) \{.*?return;\s*\}\s*scheduleCarPopulation\(\);/m)
 
     failures << 'state must track pending and published revisions' unless
       state.include?('private long pendingRevision;') &&

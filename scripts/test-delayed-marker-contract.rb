@@ -13,9 +13,11 @@ publish_location = "                publishMapLocation();\n"
 map_ready_guard = "                if (!markerAnimationLifecycle.canAnimate()) {\n                    return;\n                }\n"
 map_ready_assignment = "                MainActivity.this.mapboxMap = mapboxMap;\n"
 map_ready_publication = "                publishMapLocation();\n"
-pickup_guard = "                if (pickupMapState.hasPickup()) {\n                    return;\n                }\n"
-guard = "                        if (!markerAnimationLifecycle.canAnimate() || pickupMapState.hasPickup()) {\n                            return;\n                        }\n"
-loop_start = "                        for (int i = 0; i < 10; i++) {\n"
+enable_location = "                mapboxMap.setMyLocationEnabled(true);\n"
+pickup_return = "            mapboxMap.addMarker(new MarkerViewOptions()\n                    .position(location)\n                    .title(\"Pick Up Location\"));\n            return;\n"
+schedule_call = "        scheduleCarPopulation();\n"
+guard = "                if (!markerAnimationLifecycle.canAnimate() || pickupMapState.hasPickup()) {\n                    return;\n                }\n"
+loop_start = "                for (int i = 0; i < 10; i++) {\n"
 
 baseline_failures = DelayedMarkerContract.failures(baseline)
 abort baseline_failures.join("\n") unless baseline_failures.empty?
@@ -28,7 +30,9 @@ mutations = {
   ),
   'missing current-place map request' => baseline.sub(request_map, ''),
   'missing current-place publication' => baseline.sub(publish_location, ''),
-  'missing map-ready lifecycle guard' => baseline.sub(map_ready_guard, ''),
+  'missing map-ready lifecycle guard' => baseline.sub(
+    map_ready_guard + map_ready_assignment, map_ready_assignment
+  ),
   'map-ready guard after map assignment' => baseline.sub(
     map_ready_guard + map_ready_assignment,
     map_ready_assignment + map_ready_guard
@@ -37,7 +41,13 @@ mutations = {
     map_ready_assignment + map_ready_publication,
     map_ready_publication + map_ready_assignment
   ),
-  'missing pickup scheduling guard' => baseline.sub(pickup_guard, ''),
+  'map-ready schedules before location publication' => baseline.sub(
+    enable_location, enable_location + "                scheduleCarPopulation();\n"
+  ),
+  'pickup publication falls through to car scheduling' => baseline.sub(
+    pickup_return, pickup_return.sub("            return;\n", '')
+  ),
+  'missing current-place car scheduling' => baseline.sub(schedule_call, ''),
   'missing lifecycle guard' => baseline.sub(guard, ''),
   'inverted lifecycle guard' => baseline.sub(
     'if (!markerAnimationLifecycle.canAnimate())',
@@ -45,8 +55,8 @@ mutations = {
   ),
   'guard after marker loop' => baseline.sub(guard + loop_start, loop_start + guard),
   'guard after marker addition' => baseline.sub(
-    guard + loop_start + "                            addRandomCar();\n",
-    loop_start + "                            addRandomCar();\n" + guard
+    guard + loop_start + "                    addRandomCar();\n",
+    loop_start + "                    addRandomCar();\n" + guard
   )
 }
 

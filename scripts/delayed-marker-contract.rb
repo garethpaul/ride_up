@@ -34,22 +34,37 @@ module DelayedMarkerContract
     enable_location = 'mapboxMap.setMyLocationEnabled(true);'
     pickup_guard = /if \(pickupMapState\.hasPickup\(\)\) \{\s*return;\s*\}/
     delayed_start = map_ready.index('handler.postDelayed(new Runnable()')
+    schedule_call = map_ready.index('scheduleCarPopulation();')
     guard_start = map_ready.index(guard)
     pickup_guard_start = map_ready.index(pickup_guard)
     unless guard_start &&
            map_ready.include?(map_assignment) &&
            map_ready.include?(publish_location) &&
            map_ready.include?(enable_location) &&
-           pickup_guard_start &&
-           delayed_start &&
+           pickup_guard_start.nil? &&
+           delayed_start.nil? &&
+           schedule_call.nil? &&
            guard_start < map_ready.index(map_assignment) &&
            map_ready.index(map_assignment) < map_ready.index(publish_location) &&
-           guard_start < map_ready.index(enable_location) &&
-           pickup_guard_start < delayed_start
+           guard_start < map_ready.index(enable_location)
       return ['Map-ready callback must reject inactive lifecycle state before map mutation']
     end
 
-    delayed_start = source.index('handler.postDelayed(new Runnable()')
+    apply_start = source.index('private void applyMapPublication(')
+    schedule_start = apply_start && source.index('private void scheduleCarPopulation()', apply_start)
+    return ['MainActivity must retain publication-driven car scheduling'] unless
+      apply_start && schedule_start
+
+    apply = source[apply_start...schedule_start]
+    pickup_return = /if \(publication\.isPickup\(\)\) \{.*?return;\s*\}/m
+    schedule_call = 'scheduleCarPopulation();'
+    unless apply.match?(pickup_return) &&
+           apply.include?(schedule_call) &&
+           apply.index(pickup_return) < apply.index(schedule_call)
+      return ['Car population must follow a positioned current-place publication only']
+    end
+
+    delayed_start = source.index('handler.postDelayed(new Runnable()', schedule_start)
     delayed_end = delayed_start && source.index('}, 500);', delayed_start)
     return ['MainActivity must retain the delayed marker runnable'] unless delayed_start && delayed_end
 

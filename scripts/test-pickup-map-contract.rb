@@ -104,6 +104,13 @@ static_mutations = {
     state_source,
     controller_source
   ],
+  'pickup falls through to car scheduling' => [
+    main_activity.sub(
+      /(\.title\("Pick Up Location"\)\);)\s*return;/m, '\\1'
+    ),
+    state_source,
+    controller_source
+  ],
   'missing current-place stale guard' => [
     main_activity,
     state_source.sub(/\s*if \(hasPickup\) \{\s*return;\s*\}/m, ''),
