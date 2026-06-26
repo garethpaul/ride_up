@@ -28,6 +28,7 @@ DELAYED_MARKER_PLAN = DOCS_PLANS.join('2026-06-16-delayed-marker-population-life
 LAYOUT_RESOURCE_PLAN = DOCS_PLANS.join('2026-06-17-accessible-localized-layout-resources.md')
 LAYOUT_LINT_PLAN = DOCS_PLANS.join('2026-06-17-layout-lint-correctness-accessibility.md')
 SETUP_GUIDE_PLAN = DOCS_PLANS.join('2026-06-25-legacy-android-setup-guide.md')
+CURRENT_PLACE_REQUEST_PLAN = DOCS_PLANS.join('2026-06-26-current-place-request-generation.md')
 SETUP_GUIDE = ROOT.join('SETUP.md')
 HOSTED_VALIDATION_WORKFLOW = ROOT.join('.github/workflows/check.yml')
 CODEOWNERS = ROOT.join('.github/CODEOWNERS')
@@ -101,6 +102,22 @@ failures << "#{rel(LAYOUT_LINT_PLAN)} is missing" unless LAYOUT_LINT_PLAN.file?
 failures << "#{rel(MARKER_ANIMATION_PLAN)} is missing" unless MARKER_ANIMATION_PLAN.file?
 failures << "#{rel(LAYOUT_RESOURCE_PLAN)} is missing" unless LAYOUT_RESOURCE_PLAN.file?
 failures << "#{rel(SAFE_MAKE_AUTHORITY_PLAN)} is missing" unless SAFE_MAKE_AUTHORITY_PLAN.file?
+failures << "#{rel(CURRENT_PLACE_REQUEST_PLAN)} is missing" unless CURRENT_PLACE_REQUEST_PLAN.file?
+
+if CURRENT_PLACE_REQUEST_PLAN.file?
+  current_place_request_plan = CURRENT_PLACE_REQUEST_PLAN.read
+  [
+    '## Status: Completed',
+    'CurrentPlaceRequestController.java',
+    '19 lifecycle',
+    'Four isolated controller mutations were rejected',
+    'No provider credentials, precise locations, live PlacePicker calls'
+  ].each do |evidence|
+    unless current_place_request_plan.include?(evidence)
+      failures << "#{rel(CURRENT_PLACE_REQUEST_PLAN)} must record #{evidence.inspect}"
+    end
+  end
+end
 
 if ROOT.join('.travis.yml').exist?
   failures << '.travis.yml is obsolete and must not replace the hosted contract workflow'
@@ -197,6 +214,9 @@ guard_helper = 'app/src/main/java/com/foursquare/rideup/RideUpGuards.java'
 guard_unit_test = 'app/src/test/java/com/foursquare/rideup/RideUpGuardsTest.java'
 guard_contract_test = 'scripts/java/com/foursquare/rideup/RideUpGuardsContractTest.java'
 guard_test_runner = 'scripts/test-ride-up-guards.rb'
+current_place_controller = 'app/src/main/java/com/foursquare/rideup/CurrentPlaceRequestController.java'
+current_place_unit_test = 'app/src/test/java/com/foursquare/rideup/CurrentPlaceRequestControllerTest.java'
+current_place_contract_test = 'scripts/java/com/foursquare/rideup/CurrentPlaceRequestControllerContractTest.java'
 constants_example = 'app/src/main/java/com/foursquare/rideup/Constants.java.example'
 gitignore = '.gitignore'
 build_gradle = 'build.gradle'
@@ -266,12 +286,8 @@ if file?(main_activity)
       failures << "#{main_activity} must cache the startup location permission state"
     end
 
-    unless on_create.match?(/if\s*\(\s*hasLocationPermission\s*\)\s*\{\s*getClosestPlace\(\);\s*\}/m)
-      failures << "#{main_activity} must only fetch the closest place during startup when location permission is already granted"
-    end
-
-    if on_create.scan('getClosestPlace();').length > 1
-      failures << "#{main_activity} onCreate must not fetch the closest place outside the startup permission guard"
+    if on_create.include?('requestCurrentPlaceIfNeeded();')
+      failures << "#{main_activity} must not start current-place work before the activity resumes"
     end
 
 
@@ -295,6 +311,19 @@ if file?(main_activity)
     unless permission_result.include?('super.onRequestPermissionsResult(requestCode, permissions, grantResults);')
       failures << "#{main_activity} must forward non-location permission results to the superclass"
     end
+
+    unless permission_result.include?('requestCurrentPlaceIfNeeded();')
+      failures << "#{main_activity} must retry current-place work after exact location grants"
+    end
+  end
+
+  on_resume = java_method_source(source, 'protected void onResume()')
+  on_pause = java_method_source(source, 'protected void onPause()')
+  unless on_resume&.match?(/markerAnimationLifecycle\.resume\(\);.*locationServices\.areLocationPermissionsGranted\(\).*requestCurrentPlaceIfNeeded\(\);/m)
+    failures << "#{main_activity} must request current place only after active resume and granted permission"
+  end
+  unless on_pause&.match?(/currentPlaceRequestController\.invalidate\(\);.*stopMarkerAnimations\(\);/m)
+    failures << "#{main_activity} must invalidate current-place generations before pausing marker work"
   end
 
   {
@@ -343,6 +372,33 @@ end
 marker_lifecycle = 'app/src/main/java/com/foursquare/rideup/MarkerAnimationLifecycle.java'
 marker_lifecycle_test = 'app/src/test/java/com/foursquare/rideup/MarkerAnimationLifecycleTest.java'
 marker_contract_test = 'scripts/java/com/foursquare/rideup/MarkerAnimationLifecycleContractTest.java'
+
+if file?(current_place_controller)
+  controller_source = read(current_place_controller)
+  unless controller_source.include?('long beginIfNeeded(boolean active, boolean hasPickup)') &&
+         controller_source.include?('activeRequest = ++generation;') &&
+         controller_source.include?('void invalidate()') &&
+         controller_source.include?('request != activeRequest') &&
+         controller_source.include?('if (!active || hasPickup)') &&
+         controller_source.include?('resolved = true;')
+    failures << "#{current_place_controller} must generation-bind active current-place requests"
+  end
+else
+  failures << "#{current_place_controller} is missing"
+end
+
+[current_place_unit_test, current_place_contract_test].each do |test_path|
+  failures << "#{test_path} is missing" unless file?(test_path)
+end
+
+if file?(guard_test_runner)
+  runner_source = read(guard_test_runner)
+  unless runner_source.include?('CurrentPlaceRequestController.java') &&
+         runner_source.include?('CurrentPlaceRequestControllerContractTest.java') &&
+         runner_source.include?('com.foursquare.rideup.CurrentPlaceRequestControllerContractTest')
+    failures << "#{guard_test_runner} must execute the current-place request contract"
+  end
+end
 
 if file?(marker_lifecycle)
   lifecycle_source = read(marker_lifecycle)

@@ -1,5 +1,37 @@
 # Changes
 
+## 2026-06-26 - P1 - Generation-bind current-place requests
+
+### Summary
+
+Prevented current-place callbacks from before a pause from being lost
+permanently or clearing a newer resumed request.
+
+### Work completed
+
+- Added a Java 7-compatible request controller with monotonically increasing
+  generations, one active request, retryable failure, and resolved-state
+  suppression.
+- Moved initial current-place lookup from `onCreate()` to active `onResume()`
+  behind granted location permission.
+- Invalidated the active generation before pause and rejected stale, paused,
+  and post-pickup callbacks before storing coordinates.
+- Added SDK-free and Android unit contracts plus static lifecycle mutations.
+
+### Validation
+
+- RED: the controller contract could not compile before the production class
+  existed, demonstrating the missing generation boundary.
+- GREEN: the focused Java 7 controller test passed.
+- Containerized portable `make check` passed 77 Make authority cases, Android
+  and manifest contracts, five SDK-free Java behavior suites, 16 pickup-map
+  static plus seven executable mutations, 19 lifecycle mutations, and 15
+  layout mutations.
+- Four isolated controller mutations were rejected across invalidation, stale
+  completion, resolved suppression, and stale failure ownership.
+- Hosted Android and CodeQL evidence is recorded in
+  `docs/plans/2026-06-26-current-place-request-generation.md`.
+
 ## 2026-06-26 06:18 - P2 - Document legacy Android setup
 
 ### Summary

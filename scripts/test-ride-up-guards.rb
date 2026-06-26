@@ -11,10 +11,12 @@ sources = [
   root.join('app/src/main/java/com/foursquare/rideup/MarkerAnimationLifecycle.java'),
   root.join('app/src/main/java/com/foursquare/rideup/PickupMapState.java'),
   root.join('app/src/main/java/com/foursquare/rideup/PickupMapPublicationController.java'),
+  root.join('app/src/main/java/com/foursquare/rideup/CurrentPlaceRequestController.java'),
   root.join('scripts/java/com/foursquare/rideup/RideUpGuardsContractTest.java'),
   root.join('scripts/java/com/foursquare/rideup/MarkerAnimationLifecycleContractTest.java'),
   root.join('scripts/java/com/foursquare/rideup/PickupMapStateContractTest.java'),
-  root.join('scripts/java/com/foursquare/rideup/PickupMapPublicationControllerContractTest.java')
+  root.join('scripts/java/com/foursquare/rideup/PickupMapPublicationControllerContractTest.java'),
+  root.join('scripts/java/com/foursquare/rideup/CurrentPlaceRequestControllerContractTest.java')
 ]
 
 Dir.mktmpdir('ride-up-guards') do |output|
@@ -51,4 +53,12 @@ Dir.mktmpdir('ride-up-guards') do |output|
   abort controller_output unless controller_status.success?
 
   print controller_output
+
+  request_output, request_status = Open3.capture2e(
+    'java', '-cp', output,
+    'com.foursquare.rideup.CurrentPlaceRequestControllerContractTest'
+  )
+  abort request_output unless request_status.success?
+
+  print request_output
 end

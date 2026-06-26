@@ -94,7 +94,8 @@ static_mutations = {
   ],
   'missing resume map readiness request' => [
     main_activity.sub(
-      /(mapView\.onResume\(\);\s*\})\s*requestMapReady\(\);/m, '\\1'
+      "        requestMapReady();\n        publishMapLocation();\n",
+      "        publishMapLocation();\n"
     ),
     state_source,
     controller_source

@@ -52,8 +52,10 @@ Helpful reports include:
   location-backed lookup starts.
 - Hosted guard behavior validation executes permission and request-code
   decisions without loading project dependencies or local credentials.
-- Current-place, map-ready, and delayed marker callbacks reject inactive
-  activity lifecycle state before registering or mutating map work.
+- Current-place requests are generation-bound to an active resume; paused or
+  stale callbacks cannot publish coordinates or clear newer work, and a later
+  resume can retry. Map-ready and delayed marker callbacks reject inactive
+  lifecycle state before mutating map work.
 
 ## Mobile Privacy Notes
 

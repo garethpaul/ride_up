@@ -4,20 +4,50 @@ module DelayedMarkerContract
   module_function
 
   def failures(source)
+    resume_start = source.index('protected void onResume()')
+    resume_end = resume_start && source.index('@Override', resume_start + 1)
+    return ['MainActivity must retain the resume callback'] unless resume_start && resume_end
+
+    resume = source[resume_start...resume_end]
+    resume_active = 'markerAnimationLifecycle.resume();'
+    permission_check = 'locationServices.areLocationPermissionsGranted()'
+    current_place_request = 'requestCurrentPlaceIfNeeded();'
+    unless resume.include?(resume_active) &&
+           resume.include?(permission_check) &&
+           resume.include?(current_place_request) &&
+           resume.index(resume_active) < resume.index(permission_check) &&
+           resume.index(permission_check) < resume.index(current_place_request)
+      return ['Resume must request current place only after activity and permission are active']
+    end
+
+    pause_start = source.index('protected void onPause()')
+    pause_end = pause_start && source.index('@Override', pause_start + 1)
+    return ['MainActivity must retain the pause callback'] unless pause_start && pause_end
+
+    pause = source[pause_start...pause_end]
+    invalidate_request = 'currentPlaceRequestController.invalidate();'
+    stop_animations = 'stopMarkerAnimations();'
+    unless pause.include?(invalidate_request) &&
+           pause.include?(stop_animations) &&
+           pause.index(invalidate_request) < pause.index(stop_animations)
+      return ['Pause must invalidate current-place work before stopping marker work']
+    end
+
     success_start = source.index('public void success(Venue venue, boolean confident)')
     success_end = success_start && source.index('@Override', success_start + 1)
     return ['MainActivity must retain the current-place success callback'] unless success_start && success_end
 
     success = source[success_start...success_end]
-    success_guard = "if (!markerAnimationLifecycle.canAnimate()) {\n                    return;\n                }"
+    success_guard = /if \(!currentPlaceRequestController\.complete\(\s*requestGeneration,\s*markerAnimationLifecycle\.canAnimate\(\),\s*pickupMapState\.hasPickup\(\)\)\) \{\s*return;\s*\}/m
     state_update = 'pickupMapState.updateCurrentPlace('
     request_map = 'requestMapReady();'
     publish_location = 'publishMapLocation();'
-    unless success.include?(success_guard) &&
+    success_guard_start = success.index(success_guard)
+    unless success_guard_start &&
            success.include?(state_update) &&
            success.include?(request_map) &&
            success.include?(publish_location) &&
-           success.index(success_guard) < success.index(state_update) &&
+           success_guard_start < success.index(state_update) &&
            success.index(state_update) < success.index(request_map) &&
            success.index(request_map) < success.index(publish_location)
       return ['Current-place callback must retain state and request active map publication']

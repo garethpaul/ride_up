@@ -52,6 +52,8 @@
 - See `VISION.md` for project direction and contribution guardrails.
 - See `docs/plans/2026-06-08-ride-up-baseline.md` for the canonical Android contract validation baseline.
 - See `docs/plans/2026-06-08-android-backup-policy.md` for the app-backup privacy guard baseline.
+- Keep current-place requests generation-bound across pause/resume so stale
+  callbacks cannot publish or clear newer work.
 
 ## Agent workflow
 

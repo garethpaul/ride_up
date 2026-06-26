@@ -6,7 +6,9 @@ require_relative 'delayed-marker-contract'
 
 root = Pathname.new(__dir__).parent.expand_path
 baseline = root.join('app/src/main/java/com/foursquare/rideup/MainActivity.java').read
-current_place_guard = "                if (!markerAnimationLifecycle.canAnimate()) {\n                    return;\n                }\n\n"
+current_place_guard_pattern = /if \(!currentPlaceRequestController\.complete\(\s*requestGeneration,\s*markerAnimationLifecycle\.canAnimate\(\),\s*pickupMapState\.hasPickup\(\)\)\) \{\s*return;\s*\}\n\n/m
+current_place_guard = baseline.match(current_place_guard_pattern)&.to_s
+abort 'current-place lifecycle guard fixture is missing' unless current_place_guard
 state_update = "                pickupMapState.updateCurrentPlace(\n"
 request_map = "                requestMapReady();\n"
 publish_location = "                publishMapLocation();\n"
@@ -18,11 +20,43 @@ pickup_return = "            mapboxMap.addMarker(new MarkerViewOptions()\n      
 schedule_call = "        scheduleCarPopulation();\n"
 guard = "                if (!markerAnimationLifecycle.canAnimate() || pickupMapState.hasPickup()) {\n                    return;\n                }\n"
 loop_start = "                for (int i = 0; i < 10; i++) {\n"
+resume_prefix = <<~'JAVA'.gsub(/^/, '        ')
+  markerAnimationLifecycle.resume();
+  if (mapView != null) {
+      mapView.onResume();
+  }
+  if (locationServices != null && locationServices.areLocationPermissionsGranted()) {
+      requestCurrentPlaceIfNeeded();
+  }
+JAVA
+resume_before_active = <<~'JAVA'.gsub(/^/, '        ')
+  if (mapView != null) {
+      mapView.onResume();
+  }
+  if (locationServices != null && locationServices.areLocationPermissionsGranted()) {
+      requestCurrentPlaceIfNeeded();
+  }
+  markerAnimationLifecycle.resume();
+JAVA
+pause_prefix = "        currentPlaceRequestController.invalidate();\n        stopMarkerAnimations();\n"
 
 baseline_failures = DelayedMarkerContract.failures(baseline)
 abort baseline_failures.join("\n") unless baseline_failures.empty?
 
 mutations = {
+  'missing resume current-place retry' => baseline.sub(
+    "            requestCurrentPlaceIfNeeded();\n", ''
+  ),
+  'resume current-place request before activation' => baseline.sub(
+    resume_prefix, resume_before_active
+  ),
+  'missing pause request invalidation' => baseline.sub(
+    "        currentPlaceRequestController.invalidate();\n", ''
+  ),
+  'pause request invalidation after marker stop' => baseline.sub(
+    pause_prefix,
+    "        stopMarkerAnimations();\n        currentPlaceRequestController.invalidate();\n"
+  ),
   'missing current-place lifecycle guard' => baseline.sub(current_place_guard, ''),
   'current-place guard after state update' => baseline.sub(
     current_place_guard + state_update,
