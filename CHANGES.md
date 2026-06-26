@@ -1,5 +1,42 @@
 # Changes
 
+## 2026-06-26 - P1 - Generation-bind current-place requests
+
+### Summary
+
+Prevented current-place callbacks from before a pause from being lost
+permanently or clearing a newer resumed request.
+
+### Work completed
+
+- Added a Java 7-compatible request controller with monotonically increasing
+  generations, one active request, retryable failure, and resolved-state
+  suppression.
+- Moved initial current-place lookup from `onCreate()` to active `onResume()`
+  behind granted location permission.
+- Invalidated the active generation before pause and rejected stale, paused,
+  and post-pickup callbacks before storing coordinates.
+- Added SDK-free and Android unit contracts plus static lifecycle mutations.
+
+### Validation
+
+- RED: the controller contract could not compile before the production class
+  existed, demonstrating the missing generation boundary.
+- GREEN: the focused Java 7 controller test passed.
+- Containerized portable `make check` passed 77 Make authority cases, Android
+  and manifest contracts, five SDK-free Java behavior suites, 16 pickup-map
+  static plus seven executable mutations, 19 lifecycle mutations, and 15
+  layout mutations.
+- Four isolated controller mutations were rejected across invalidation, stale
+  completion, resolved suppression, and stale failure ownership.
+- Implementation head `2ca59dc6110a2012a02d9ab71ddf6565459e9b9a`
+  passed both hosted `check` jobs, all four CodeQL language analyses, and the
+  CodeQL aggregate gate on pull request #14.
+- Required Codex review was attempted against `origin/master` and stopped
+  before analysis because both WebSocket and HTTPS transports returned OpenAI
+  HTTP 401. Immutable local, remote, and pull-request heads matched, and the
+  manual fallback review found no actionable defects.
+
 ## 2026-06-26 06:18 - P2 - Document legacy Android setup
 
 ### Summary

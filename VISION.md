@@ -29,7 +29,7 @@ Priority:
 - Keep landing-page local asset references aligned with checked-in files
 - Keep PlacePicker result handling guarded before reading venues or map state
 - Keep PlacePicker activity results scoped to the request that launched them
-- Keep startup current-place lookup behind granted location permission
+- Keep current-place lookup behind active resume and granted location permission
 - Keep permission-result handling gated on the exact requested location names,
   aligned results, and every requested location grant
 - Keep unrelated permission-result callbacks forwarded to the superclass
@@ -37,6 +37,7 @@ Priority:
 - Keep MapView lifecycle forwarding guarded for missing view instances
 - Keep current-place, map-ready, and delayed marker work bound to an active
   activity lifecycle
+- Keep stale current-place callback generations from clearing resumed work
 - Treat support libraries and Gradle versions as legacy
 - Keep the Android modernization plan visible until the SDK 23 baseline is
   replaced in a dedicated compatibility pass

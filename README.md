@@ -124,8 +124,8 @@ boundaries.
   result data, missing venue and venue-location payloads, and map updates
   before Mapbox is ready. It also requires matching request and result codes
   before the callback consumes picker data.
-- The static checker verifies startup current-place lookup only runs after
-  location permission is already granted.
+- The static checker verifies current-place lookup starts only after an active
+  resume and granted location permission.
 - The static checker verifies the permission callback names the exact requested
   coarse/fine location set once, aligns names with results, and receives every
   grant before starting the current-place lookup.
@@ -135,9 +135,11 @@ boundaries.
   venue-location payloads before reading coordinates.
 - The static checker verifies MapView lifecycle callbacks guard missing map
   instances before forwarding lifecycle events.
-- Current-place, map-ready, and delayed marker callbacks check activity
-  lifecycle state before registering or mutating map work that may already be
-  off-screen or destroyed.
+- Current-place requests use lifecycle generations so callbacks from before a
+  pause cannot publish coordinates or clear a newer resumed request. Paused
+  callbacks remain retryable on the next active resume.
+- Map-ready and delayed marker callbacks check activity lifecycle state before
+  registering or mutating map work that may already be off-screen or destroyed.
 - The guard behavior harness executes reordered, missing, unknown, duplicate,
   null, misaligned, partial, and complete permission callbacks plus matching
   and unrelated PlacePicker callback codes.

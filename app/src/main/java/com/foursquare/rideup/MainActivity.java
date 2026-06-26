@@ -73,6 +73,8 @@ public class MainActivity extends AppCompatActivity {
     private final PickupMapState pickupMapState = new PickupMapState();
     private final PickupMapPublicationController pickupMapPublicationController =
             new PickupMapPublicationController(pickupMapState);
+    private final CurrentPlaceRequestController currentPlaceRequestController =
+            new CurrentPlaceRequestController();
     private final List<MarkerView> carMarkers = new ArrayList<>();
     private final List<ValueAnimator> carAnimators = new ArrayList<>();
 
@@ -134,9 +136,6 @@ public class MainActivity extends AppCompatActivity {
         mapView = (MapView) findViewById(R.id.mapView);
         mapView.onCreate(savedInstanceState);
 
-        if (hasLocationPermission) {
-            getClosestPlace();
-        }
     }
 
     private void requestRide() {
@@ -155,19 +154,30 @@ public class MainActivity extends AppCompatActivity {
         startActivityForResult(intent, PLACE_PICKER_REQUEST);
     }
 
-    private void getClosestPlace() {
+    private void requestCurrentPlaceIfNeeded() {
+        final long requestGeneration = currentPlaceRequestController.beginIfNeeded(
+                markerAnimationLifecycle.canAnimate(), pickupMapState.hasPickup());
+        if (requestGeneration == 0) {
+            return;
+        }
+
         PlacePickerSdk.get().getCurrentPlace(new PlacePickerSdk.CurrentPlaceResult() {
             @Override
             public void success(Venue venue, boolean confident) {
                 if (venue == null) {
+                    currentPlaceRequestController.fail(requestGeneration);
                     return;
                 }
 
                 if (venue.getLocation() == null) {
+                    currentPlaceRequestController.fail(requestGeneration);
                     return;
                 }
 
-                if (!markerAnimationLifecycle.canAnimate()) {
+                if (!currentPlaceRequestController.complete(
+                        requestGeneration,
+                        markerAnimationLifecycle.canAnimate(),
+                        pickupMapState.hasPickup())) {
                     return;
                 }
 
@@ -178,6 +188,7 @@ public class MainActivity extends AppCompatActivity {
             }
             @Override
             public void fail() {
+                currentPlaceRequestController.fail(requestGeneration);
             }
         });
     }
@@ -293,6 +304,9 @@ public class MainActivity extends AppCompatActivity {
         if (mapView != null) {
             mapView.onResume();
         }
+        if (locationServices != null && locationServices.areLocationPermissionsGranted()) {
+            requestCurrentPlaceIfNeeded();
+        }
         requestMapReady();
         publishMapLocation();
         for (MarkerView marker : new ArrayList<>(carMarkers)) {
@@ -302,6 +316,7 @@ public class MainActivity extends AppCompatActivity {
 
     @Override
     protected void onPause() {
+        currentPlaceRequestController.invalidate();
         stopMarkerAnimations();
         super.onPause();
         if (mapView != null) {
@@ -454,7 +469,7 @@ public class MainActivity extends AppCompatActivity {
                     grantResults,
                     LOCATION_PERMISSIONS,
                     PackageManager.PERMISSION_GRANTED)) {
-                getClosestPlace();
+                requestCurrentPlaceIfNeeded();
             }
         } else {
             super.onRequestPermissionsResult(requestCode, permissions, grantResults);
