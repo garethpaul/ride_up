@@ -47,7 +47,6 @@ Priority:
 
 Next priorities:
 
-- Add setup notes for Android SDK, Mapbox, and Foursquare credentials
 - Add a safe placeholder or mock mode for ride markers
 - Document which landing-page assets are part of the sample
 - Modernize dependencies in a separate compatibility pass

@@ -24,6 +24,7 @@ This README is based on the checked-in source, manifests, scripts, and repositor
 - `docs/plans` - completed maintenance plans for the current baseline
 - `gradle` - source or example code
 - `gradlew` - Android or Gradle build configuration
+- `SETUP.md` - exact legacy SDK, credential, and verification boundaries
 - `javascripts` - source or example code
 - `plans` - historical implementation notes
 - `scripts` - static Android contract validators
@@ -62,6 +63,10 @@ The setup commands above are derived from repository files. Legacy mobile, Pytho
 Fill the copied `Constants.java` with local Mapbox and Foursquare credentials.
 The real file is ignored by git; keep the checked-in `.example` file free of
 secrets.
+
+Follow [`SETUP.md`](SETUP.md) for the exact Android API 23/build-tools 28.0.3,
+AGP 3.3.2/Gradle 4.10.2, JDK 8, SDK-variable, credential, and runtime-evidence
+boundaries.
 
 ## Running or Using the Project
 

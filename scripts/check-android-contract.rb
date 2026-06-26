@@ -27,6 +27,8 @@ MARKER_ANIMATION_PLAN = DOCS_PLANS.join('2026-06-14-marker-animation-lifecycle.m
 DELAYED_MARKER_PLAN = DOCS_PLANS.join('2026-06-16-delayed-marker-population-lifecycle.md')
 LAYOUT_RESOURCE_PLAN = DOCS_PLANS.join('2026-06-17-accessible-localized-layout-resources.md')
 LAYOUT_LINT_PLAN = DOCS_PLANS.join('2026-06-17-layout-lint-correctness-accessibility.md')
+SETUP_GUIDE_PLAN = DOCS_PLANS.join('2026-06-25-legacy-android-setup-guide.md')
+SETUP_GUIDE = ROOT.join('SETUP.md')
 HOSTED_VALIDATION_WORKFLOW = ROOT.join('.github/workflows/check.yml')
 CODEOWNERS = ROOT.join('.github/CODEOWNERS')
 GRADLE_RUNNER = ROOT.join('scripts/run-android-gradle.sh')
@@ -165,6 +167,9 @@ docs_plans.each do |plan_path|
     failures << "#{rel(plan_path)} must record completed status and make check verification"
   end
 end
+
+failures << "#{rel(SETUP_GUIDE_PLAN)} is missing" unless SETUP_GUIDE_PLAN.file?
+failures << "#{rel(SETUP_GUIDE)} is missing" unless SETUP_GUIDE.file?
 
 if HOSTED_BUILD_PLAN.file?
   hosted_build_plan = HOSTED_BUILD_PLAN.read
@@ -733,6 +738,26 @@ readme = read('README.md')
 vision = read('VISION.md')
 security = read('SECURITY.md')
 changes = read('CHANGES.md')
+setup_guide = SETUP_GUIDE.file? ? SETUP_GUIDE.read.gsub(/\s+/, ' ') : ''
+[
+  'Android API 23 and build-tools 28.0.3',
+  'Android Gradle Plugin 3.3.2 and Gradle 4.10.2',
+  'JDK 8',
+  'ANDROID_HOME or ANDROID_SDK_ROOT',
+  'MAPBOX_ACCESS_TOKEN',
+  'FOURSQUARE_CLIENT_KEY',
+  'FOURSQUARE_CLIENT_SECRET',
+  'never commit Constants.java',
+  'make check',
+  'emulator or physical device'
+].each do |fragment|
+  failures << "SETUP.md must document #{fragment.inspect}" unless setup_guide.include?(fragment)
+end
+failures << 'README.md must link SETUP.md' unless readme.include?('[`SETUP.md`](SETUP.md)')
+failures << 'SECURITY.md must link SETUP.md' unless security.include?('`SETUP.md`')
+if vision.include?('Add setup notes for Android SDK, Mapbox, and Foursquare credentials')
+  failures << 'VISION.md must not retain the completed setup-guide priority'
+end
 unless [readme, vision, security, changes].all? { |text| text.include?('Android modernization plan') }
   failures << 'docs must mention the Android modernization plan'
 end

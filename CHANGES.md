@@ -1,5 +1,60 @@
 # Changes
 
+## 2026-06-26 06:18 - P2 - Document legacy Android setup
+
+### Summary
+
+Closed the SDK and provider-credential setup roadmap item with one exact,
+contract-enforced legacy environment guide.
+
+### Work completed
+
+- Documented API 23/build-tools 28.0.3, AGP 3.3.2/Gradle 4.10.2, and JDK 8.
+- Documented local SDK variables and the three ignored Mapbox/Foursquare values.
+- Separated SDK-free checks, SDK-backed builds, temporary hosted placeholders,
+  and emulator/device runtime evidence.
+- Linked the guide from README/security docs and removed the completed priority.
+
+### Threads
+
+- Started: legacy Android setup guide.
+- Continued: continuous open-source maintenance loop.
+- Stopped: none.
+
+### Files changed
+
+- `SETUP.md` — toolchain, credentials, gates, and runtime boundaries.
+- `README.md`, `SECURITY.md`, `VISION.md` — links and roadmap state.
+- `scripts/check-android-contract.rb` — durable setup contract.
+- `docs/plans/2026-06-25-legacy-android-setup-guide.md` — completed plan.
+- `CHANGES.md` — this cycle record.
+
+### Validation
+
+- Red Ruby contract — failed for every missing guide requirement before docs.
+- Containerized SDK-free `make check` — passed 77 Make authority cases, static
+  Android/manifest contracts, executable Java guards, and 53 existing mutations.
+- Thirteen isolated setup-guide mutations — all rejected across toolchain,
+  credential, verification, link, runtime-evidence, and roadmap promises.
+- SDK-backed and hosted Android results pending.
+
+### Bugs / findings
+
+- P2: Setup facts were scattered and did not distinguish compile placeholders
+  from valid provider runtime credentials.
+- P2: Generic Android Studio guidance omitted the canonical JDK 8 and exact SDK
+  package boundary required by the legacy Gradle bridge.
+
+### Blockers
+
+- This host has no Ruby or Android SDK; Ruby runs in the reviewed container and
+  SDK-backed behavior requires hosted verification.
+
+### Next action
+
+- Run containerized portable checks and hostile guide mutations, then require
+  exact-head Android and CodeQL gates before review and merge.
+
 ## 2026-06-25
 
 - Preserved explicit pickup selections until the map and activity are ready,
