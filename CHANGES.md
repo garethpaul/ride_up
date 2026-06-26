@@ -29,8 +29,13 @@ permanently or clearing a newer resumed request.
   layout mutations.
 - Four isolated controller mutations were rejected across invalidation, stale
   completion, resolved suppression, and stale failure ownership.
-- Hosted Android and CodeQL evidence is recorded in
-  `docs/plans/2026-06-26-current-place-request-generation.md`.
+- Implementation head `2ca59dc6110a2012a02d9ab71ddf6565459e9b9a`
+  passed both hosted `check` jobs, all four CodeQL language analyses, and the
+  CodeQL aggregate gate on pull request #14.
+- Required Codex review was attempted against `origin/master` and stopped
+  before analysis because both WebSocket and HTTPS transports returned OpenAI
+  HTTP 401. Immutable local, remote, and pull-request heads matched, and the
+  manual fallback review found no actionable defects.
 
 ## 2026-06-26 06:18 - P2 - Document legacy Android setup
 

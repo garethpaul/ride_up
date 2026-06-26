@@ -39,4 +39,10 @@ dispatch behavior are included in verification.
   mutations, and 15 layout mutations.
 - Four isolated controller mutations were rejected across pause invalidation,
   stale completion, resolved suppression, and stale failure ownership.
-- SDK-backed Android and CodeQL results are recorded before merge.
+- Pull request #14 implementation head
+  `2ca59dc6110a2012a02d9ab71ddf6565459e9b9a` passed both hosted `check`
+  jobs, all four CodeQL language analyses, and the CodeQL aggregate gate.
+- Required Codex review was attempted against `origin/master`; the helper
+  stopped before analysis because OpenAI WebSocket and HTTPS transports both
+  returned HTTP 401. Local, remote, and pull-request heads were identical, and
+  an immutable manual fallback review found no actionable defects.
